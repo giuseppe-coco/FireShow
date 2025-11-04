@@ -24,9 +24,8 @@ void FireworksShell::Update(float dt)
     {
         fuse -= dt; // Consuma la miccia
 
-        // Applica la fisica al proiettile principale
         position += velocity * dt;
-        velocity.y -= 9.81f * 0.5f * dt; // La gravità agisce anche sul proiettile in salita
+        velocity.y -= 9.81f * 0.5f * dt;
 
         // Logica per emettere la scia di particelle
         trailTimer += dt;

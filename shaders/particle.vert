@@ -19,6 +19,6 @@ void main()
     // La facciamo dipendere dalla distanza per dare un minimo di prospettiva
     // e la riduciamo per le particelle che stanno per "morire".
     float distance = length(gl_Position.xyz);
-    gl_PointSize = 20.0 / distance;
-    gl_PointSize *= (vs_Color.a * 2.0); // Riduciamo la dimensione man mano che il colore sfuma
+    gl_PointSize = 30.0 / distance;
+    gl_PointSize *= (vs_Color.a * 3.0); // Riduciamo la dimensione man mano che il colore sfuma
 }
