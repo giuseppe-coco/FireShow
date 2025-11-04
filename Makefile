@@ -8,7 +8,7 @@ CXX = g++
 CXXFLAGS = -g -Wall
 
 # Elenco dei sorgenti comuni (glad deve essere sempre compilato)
-COMMON_SRCS = libs/glad/src/glad.c src/image_loader_adapter.cpp src\ParticleSystem.cpp src\Shader.cpp
+COMMON_SRCS = libs/glad/src/glad.c src/image_loader_adapter.cpp src\ParticleSystem.cpp src\Shader.cpp src\FireworksShell.cpp
 
 # Percorsi dove cercare i file di intestazione (.h)
 # Il flag -I dice al compilatore "cerca anche qui"

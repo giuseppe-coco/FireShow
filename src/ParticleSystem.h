@@ -20,8 +20,12 @@ class ParticleSystem
 {
 public:
     ParticleSystem(Shader &shader, unsigned int amount);
-    void Update(float dt, glm::vec3 explosionCenter);
+    void Update(float dt); // Gestisce solo la fisica delle particelle VIVE
     void Draw();
+
+    // Permette a un sistema esterno (come FireworksShell) di rianimare una particella
+    // con proprietà specifiche.
+    void RespawnParticle(Particle &particleProperties);
 
 private:
     Shader &shader;
@@ -29,7 +33,11 @@ private:
     std::vector<Particle> particles;
     unsigned int VAO, VBO;
 
+    // tiene traccia dell'ultima particella che abbiamo rianimato, per evitare di
+    // controllare tutto l'array ogni volta. È una semplice ottimizzazione.
+    unsigned int lastUsedParticle = 0;
+
     void init();
-    // Funzione che "rianima" una particella morta, riposizionandola al centro dell'esplosione
-    void respawnParticle(Particle &particle, glm::vec3 explosionCenter);
+
+    unsigned int findUnusedParticle();
 };

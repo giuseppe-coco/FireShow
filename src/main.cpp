@@ -1,13 +1,15 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <iostream>
-
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <iostream>
+#include <vector>
+
 #include "Shader.h"
 #include "ParticleSystem.h"
+#include "FireworksShell.h"
 
 // --- Impostazioni ---
 const unsigned int SCR_WIDTH = 1280;
@@ -47,10 +49,16 @@ int main()
 
     // --- Creazione risorse ---
     Shader particleShader("shaders/particle.vert", "shaders/particle.frag");
-    ParticleSystem particles(particleShader, 5000); // Creiamo un sistema con 5000 particelle
+    ParticleSystem particleSystem(particleShader, 10000); // Creiamo un sistema con 5000 particelle
 
-    // Vogliamo che le esplosioni avvengano ad altezze diverse
-    glm::vec3 explosionCenter = glm::vec3(0.0f, 20.0f, 0.0f);
+    // Creiamo un "pool" di proiettili. Invece di creare e distruggere oggetti,
+    // li riutilizziamo. Questo è molto più efficiente.
+    const int MAX_SHELLS = 10;
+    std::vector<FireworksShell> shellPool;
+    for (int i = 0; i < MAX_SHELLS; ++i)
+        shellPool.emplace_back(particleSystem); // emplace_back costruisce l'oggetto direttamente nel vettore
+
+    float launchTimer = 0.0f;
 
     // --- Render Loop ---
     while (!glfwWindowShouldClose(window))
@@ -67,23 +75,39 @@ int main()
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
 
-        // Se premi SPAZIO, generiamo una nuova esplosione in un punto casuale
-        if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+        // --- Logica di lancio ---
+        launchTimer += deltaTime;
+        if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && launchTimer > 0.5f) // Limita il lancio a uno ogni 0.5s
         {
-            explosionCenter.x = (rand() % 40) - 20;    // x tra -20 e 20
-            explosionCenter.y = 15.0f + (rand() % 10); // y tra 15 e 25
-            explosionCenter.z = (rand() % 20) - 10;    // z tra -10 e 10
+            // Cerca un proiettile inattivo nel pool
+            for (auto &shell : shellPool)
+            {
+                if (shell.GetState() == ShellState::INACTIVE)
+                {
+                    // Trovato! Lo lanciamo.
+                    glm::vec3 startPos = glm::vec3((rand() % 40) - 20, 0.0f, (rand() % 20) - 10);
+                    glm::vec3 startVel = glm::vec3(0.0f, 10.0f + (rand() % 10), 0.0f);
+                    float fuse = 2.0f + (rand() % 100) / 100.0f;
 
-            // "Respawna" tutte le particelle nel nuovo punto di esplosione
-            particles.Update(999.0f, explosionCenter); // Passiamo un dt enorme per "uccidere" istantaneamente tutte le particelle vecchie
+                    shell.Launch(startPos, startVel, fuse);
+                    launchTimer = 0.0f; // Resetta il timer
+                    break;              // Esci dal ciclo una volta lanciato un proiettile
+                }
+            }
         }
+
+        // --- Aggiornamenti ---
+        // Aggiorna tutti i proiettili attivi
+        for (auto &shell : shellPool)
+        {
+            shell.Update(deltaTime);
+        }
+        // Aggiorna la fisica di tutte le particelle
+        particleSystem.Update(deltaTime);
 
         // --- Rendering ---
         glClearColor(0.02f, 0.02f, 0.05f, 1.0f); // Un blu scuro per il cielo notturno
         glClear(GL_COLOR_BUFFER_BIT);
-
-        // --- Aggiorna e Disegna Particelle ---
-        particles.Update(deltaTime, explosionCenter);
 
         // Setup delle matrici di trasformazione
         glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
@@ -93,7 +117,7 @@ int main()
         particleShader.setMat4("projection", projection);
         particleShader.setMat4("view", view);
 
-        particles.Draw();
+        particleSystem.Draw();
 
         // --- Swap buffers e poll events ---
         glfwSwapBuffers(window);

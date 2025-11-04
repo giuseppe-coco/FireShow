@@ -42,7 +42,7 @@ void ParticleSystem::init()
         this->particles.push_back(Particle());
 }
 
-void ParticleSystem::Update(float dt, glm::vec3 explosionCenter)
+void ParticleSystem::Update(float dt)
 {
     for (unsigned int i = 0; i < this->amount; ++i)
     {
@@ -53,20 +53,10 @@ void ParticleSystem::Update(float dt, glm::vec3 explosionCenter)
         {
             // La particella è viva, aggiorna la sua posizione
             p.Position += p.Velocity * dt;
-
             // Applichiamo una semplice gravità
             p.Velocity.y -= 9.81f * 0.1f * dt; // TODO: ask AI
-
             // Facciamo sfumare la particella verso la trasparenza
             p.Color.a = p.Life * 2.0f; //TODO: ask AI Moltiplicato per 2 per un fade-out più veloce
-        }
-        else
-        {
-            // La particella è "morta", la facciamo rinascere al centro della prossima esplosione
-            // NOTA: in un sistema reale, non la faresti rinascere subito,
-            // ma la terresti in un "pool" di particelle morte.
-            // Per questo esempio, la rianimiamo per semplicità.
-            respawnParticle(p, explosionCenter);
         }
     }
 
@@ -103,20 +93,34 @@ void ParticleSystem::Draw()
     glDisable(GL_BLEND);
 }
 
-void ParticleSystem::respawnParticle(Particle &particle, glm::vec3 explosionCenter)
+// Cerca la prossima particella "morta" nel nostro pool.
+unsigned int ParticleSystem::findUnusedParticle()
 {
-    // Scegliamo una velocità iniziale casuale che si espande in tutte le direzioni.
-    // glm::ballRand(1.0f) genera un vettore casuale dentro una sfera di raggio 1.0.
-    // Moltiplicandolo per una forza, otteniamo una bella esplosione.
-    float randomForce = 5.0f + (rand() % 100) / 100.0f * 5.0f; // Forza tra 5 e 10
-    particle.Velocity = glm::ballRand(1.0f) * randomForce;
+    // Cerca dall'ultima particella usata in avanti
+    for (unsigned int i = lastUsedParticle; i < this->amount; ++i)
+    {
+        if (particles[i].Life <= 0.0f)
+        {
+            lastUsedParticle = i;
+            return i;
+        }
+    }
+    // Se non ne trova, ricomincia dall'inizio
+    for (unsigned int i = 0; i < lastUsedParticle; ++i)
+    {
+        if (particles[i].Life <= 0.0f)
+        {
+            lastUsedParticle = i;
+            return i;
+        }
+    }
+    // Se tutte le particelle sono vive, sovrascrivi la prima (caso limite)
+    lastUsedParticle = 0;
+    return 0;
+}
 
-    // Impostiamo la posizione iniziale al centro dell'esplosione
-    particle.Position = explosionCenter;
-
-    // Assegnamo un colore casuale (es. rosso-arancio-giallo)
-    particle.Color = glm::vec4(1.0f, 0.5f + (rand() % 100) / 200.0f, 0.0f, 1.0f);
-
-    // Diamo una vita casuale per far sì che le particelle non muoiano tutte insieme
-    particle.Life = 1.0f + (rand() % 100) / 100.0f; // Vita tra 1.0 e 2.0 secondi
+void ParticleSystem::RespawnParticle(Particle &particleProperties)
+{
+    unsigned int particleIndex = findUnusedParticle();
+    this->particles[particleIndex] = particleProperties;
 }
