@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include "stb_image.h"
 
 #include <iostream>
 #include <vector>
@@ -21,6 +22,44 @@ float lastFrame = 0.0f;
 
 // --- Camera ---
 glm::vec3 cameraPos = glm::vec3(0.0f, 10.0f, 50.0f);
+
+unsigned int loadTexture(char const *path)
+{
+    unsigned int textureID;
+    glGenTextures(1, &textureID);
+
+    int width, height, nrComponents;
+    unsigned char *data = stbi_load(path, &width, &height, &nrComponents, 0);
+    if (data)
+    {
+        GLenum format;
+        if (nrComponents == 1)
+            format = GL_RED;
+        else if (nrComponents == 3)
+            format = GL_RGB;
+        else if (nrComponents == 4)
+            format = GL_RGBA;
+
+        glBindTexture(GL_TEXTURE_2D, textureID);
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        // Imposta il wrapping della texture per il terreno
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        stbi_image_free(data);
+    }
+    else
+    {
+        std::cout << "Texture failed to load at path: " << path << std::endl;
+        stbi_image_free(data);
+    }
+
+    return textureID;
+}
 
 int main()
 {
@@ -48,8 +87,36 @@ int main()
     glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 
     // --- Creazione risorse ---
+    Shader groundShader("shaders/ground.vert", "shaders/ground.frag");
+
+    float groundVertices[] = {
+        // positions          // texture Coords
+        25.0f, 0.0f, 25.0f, 25.0f, 0.0f,
+        -25.0f, 0.0f, 25.0f, 0.0f, 0.0f,
+        -25.0f, 0.0f, -25.0f, 0.0f, 25.0f,
+
+        25.0f, 0.0f, 25.0f, 25.0f, 0.0f,
+        -25.0f, 0.0f, -25.0f, 0.0f, 25.0f,
+        25.0f, 0.0f, -25.0f, 25.0f, 25.0f};
+    unsigned int groundVAO, groundVBO;
+    glGenVertexArrays(1, &groundVAO);
+    glGenBuffers(1, &groundVBO);
+    glBindVertexArray(groundVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, groundVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(groundVertices), groundVertices, GL_STATIC_DRAW);
+    // position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
+    glEnableVertexAttribArray(0);
+    // texture coord attribute
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    unsigned int groundTexture = loadTexture("textures/ground.jpg");
+    groundShader.use();
+    groundShader.setInt("groundTexture", 0);
+
     Shader particleShader("shaders/particle.vert", "shaders/particle.frag");
-    ParticleSystem particleSystem(particleShader, 10000); // Creiamo un sistema con 5000 particelle
+    ParticleSystem particleSystem(particleShader, 10000); // Creiamo un sistema con 10000 particelle
 
     // Creiamo un "pool" di proiettili. Invece di creare e distruggere oggetti,
     // li riutilizziamo. Questo è molto più efficiente.
@@ -107,17 +174,34 @@ int main()
 
         // --- Rendering ---
         glClearColor(0.02f, 0.02f, 0.05f, 1.0f); // Un blu scuro per il cielo notturno
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glEnable(GL_DEPTH_TEST);
 
         // Setup delle matrici di trasformazione
         glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         glm::mat4 view = glm::lookAt(cameraPos, glm::vec3(0.0f, 10.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
+        // --- Disegna il Terreno ---
+        groundShader.use();
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::scale(model, glm::vec3(20.0f)); // Rendi il terreno molto grande
+        groundShader.setMat4("model", model);
+        groundShader.setMat4("view", view);
+        groundShader.setMat4("projection", projection);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, groundTexture);
+
+        glBindVertexArray(groundVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+
+        // --- Disegna il Particelle  ---
+        glDepthMask(GL_FALSE);
         particleShader.use();
         particleShader.setMat4("projection", projection);
         particleShader.setMat4("view", view);
-
         particleSystem.Draw();
+        glDepthMask(GL_TRUE);
 
         // --- Swap buffers e poll events ---
         glfwSwapBuffers(window);
