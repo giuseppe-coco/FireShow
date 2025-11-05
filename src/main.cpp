@@ -4,6 +4,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "stb_image.h"
+#include "../vendors/imgui/imgui.h"
+#include "../vendors/imgui/imgui_impl_glfw.h"
+#include "../vendors/imgui/imgui_impl_opengl3.h"
 
 #include <iostream>
 #include <vector>
@@ -11,6 +14,7 @@
 #include "Shader.h"
 #include "ParticleSystem.h"
 #include "FireworksShell.h"
+#include "Timeline.h"
 
 // --- Impostazioni ---
 const unsigned int SCR_WIDTH = 1280;
@@ -23,43 +27,8 @@ float lastFrame = 0.0f;
 // --- Camera ---
 glm::vec3 cameraPos = glm::vec3(0.0f, 10.0f, 50.0f);
 
-unsigned int loadTexture(char const *path)
-{
-    unsigned int textureID;
-    glGenTextures(1, &textureID);
-
-    int width, height, nrComponents;
-    unsigned char *data = stbi_load(path, &width, &height, &nrComponents, 0);
-    if (data)
-    {
-        GLenum format;
-        if (nrComponents == 1)
-            format = GL_RED;
-        else if (nrComponents == 3)
-            format = GL_RGB;
-        else if (nrComponents == 4)
-            format = GL_RGBA;
-
-        glBindTexture(GL_TEXTURE_2D, textureID);
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-
-        // Imposta il wrapping della texture per il terreno
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        stbi_image_free(data);
-    }
-    else
-    {
-        std::cout << "Texture failed to load at path: " << path << std::endl;
-        stbi_image_free(data);
-    }
-
-    return textureID;
-}
+void framebuffer_size_callback(GLFWwindow *window, int width, int height);
+unsigned int loadTexture(char const *path);
 
 int main()
 {
@@ -77,6 +46,7 @@ int main()
         return -1;
     }
     glfwMakeContextCurrent(window);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
@@ -86,7 +56,19 @@ int main()
 
     glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 
+    // --- Setup di DEAR IMGUI ---
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO &io = ImGui::GetIO();
+    (void)io;
+    // io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Abilita controllo da tastiera
+    ImGui::StyleColorsDark(); // Scegli lo stile
+    // Inizializza i backend
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init("#version 330");
+
     // --- Creazione risorse ---
+    Timeline timeline;
     Shader groundShader("shaders/ground.vert", "shaders/ground.frag");
 
     float groundVertices[] = {
@@ -98,6 +80,7 @@ int main()
         25.0f, 0.0f, 25.0f, 25.0f, 0.0f,
         -25.0f, 0.0f, -25.0f, 0.0f, 25.0f,
         25.0f, 0.0f, -25.0f, 25.0f, 25.0f};
+    
     unsigned int groundVAO, groundVBO;
     glGenVertexArrays(1, &groundVAO);
     glGenBuffers(1, &groundVBO);
@@ -125,8 +108,6 @@ int main()
     for (int i = 0; i < MAX_SHELLS; ++i)
         shellPool.emplace_back(particleSystem); // emplace_back costruisce l'oggetto direttamente nel vettore
 
-    float launchTimer = 0.0f;
-
     // --- Render Loop ---
     while (!glfwWindowShouldClose(window))
     {
@@ -142,23 +123,47 @@ int main()
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
 
-        // --- Logica di lancio ---
-        launchTimer += deltaTime;
-        if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && launchTimer > 0.5f) // Limita il lancio a uno ogni 0.5s
-        {
-            // Cerca un proiettile inattivo nel pool
-            for (auto &shell : shellPool)
-            {
-                if (shell.GetState() == ShellState::INACTIVE)
-                {
-                    // Trovato! Lo lanciamo.
-                    glm::vec3 startPos = glm::vec3((rand() % 40) - 20, 0.0f, (rand() % 20) - 10);
-                    glm::vec3 startVel = glm::vec3(0.0f, 10.0f + (rand() % 10), 0.0f);
-                    float fuse = 2.0f + (rand() % 100) / 100.0f;
+        // --- Inizia un nuovo frame di ImGui ---
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+        timeline.DrawUI();
 
-                    shell.Launch(startPos, startVel, fuse);
-                    launchTimer = 0.0f; // Resetta il timer
-                    break;              // Esci dal ciclo una volta lanciato un proiettile
+        // // --- Logica di lancio ---
+        // launchTimer += deltaTime;
+        // if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && launchTimer > 0.5f) // Limita il lancio a uno ogni 0.5s
+        // {
+        //     // Cerca un proiettile inattivo nel pool
+        //     for (auto &shell : shellPool)
+        //     {
+        //         if (shell.GetState() == ShellState::INACTIVE)
+        //         {
+        //             // Trovato! Lo lanciamo.
+        //             glm::vec3 startPos = glm::vec3((rand() % 40) - 20, 0.0f, (rand() % 20) - 10);
+        //             glm::vec3 startVel = glm::vec3(0.0f, 10.0f + (rand() % 10), 0.0f);
+        //             float fuse = 2.0f + (rand() % 100) / 100.0f;
+
+        //             shell.Launch(startPos, startVel, fuse);
+        //             launchTimer = 0.0f; // Resetta il timer
+        //             break;              // Esci dal ciclo una volta lanciato un proiettile
+        //         }
+        //     }
+        // }
+
+        // Aggiorna la timeline e ottieni gli eventi da eseguire
+        auto eventsToTrigger = timeline.Update(deltaTime);
+        if (!eventsToTrigger.empty())
+        {
+            for (const auto *eventData : eventsToTrigger)
+            {
+                // Cerca un proiettile inattivo e lancialo con i dati dell'evento
+                for (auto &shell : shellPool)
+                {
+                    if (shell.GetState() == ShellState::INACTIVE)
+                    {
+                        shell.Launch(eventData->startPosition, eventData->startVelocity, eventData->fuseTime);
+                        break; // Lancia solo un proiettile per evento e passa al prossimo
+                    }
                 }
             }
         }
@@ -203,11 +208,62 @@ int main()
         particleSystem.Draw();
         glDepthMask(GL_TRUE);
 
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
         // --- Swap buffers e poll events ---
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
     glfwTerminate();
     return 0;
+}
+
+void framebuffer_size_callback(GLFWwindow *window, int width, int height)
+{
+    // make sure the viewport matches the new window dimensions; note that width and
+    // height will be significantly larger than specified on retina displays.
+    glViewport(0, 0, width, height);
+}
+
+unsigned int loadTexture(char const *path)
+{
+    unsigned int textureID;
+    glGenTextures(1, &textureID);
+
+    int width, height, nrComponents;
+    unsigned char *data = stbi_load(path, &width, &height, &nrComponents, 0);
+    if (data)
+    {
+        GLenum format;
+        if (nrComponents == 1)
+            format = GL_RED;
+        else if (nrComponents == 3)
+            format = GL_RGB;
+        else if (nrComponents == 4)
+            format = GL_RGBA;
+
+        glBindTexture(GL_TEXTURE_2D, textureID);
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        // Imposta il wrapping della texture per il terreno
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        stbi_image_free(data);
+    }
+    else
+    {
+        std::cout << "Texture failed to load at path: " << path << std::endl;
+        stbi_image_free(data);
+    }
+
+    return textureID;
 }

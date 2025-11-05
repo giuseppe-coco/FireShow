@@ -8,7 +8,10 @@ CXX = g++
 CXXFLAGS = -g -Wall
 
 # Elenco dei sorgenti comuni (glad deve essere sempre compilato)
-COMMON_SRCS = libs/glad/src/glad.c src/image_loader_adapter.cpp src\ParticleSystem.cpp src\Shader.cpp src\FireworksShell.cpp
+COMMON_SRCS = libs/glad/src/glad.c src/image_loader_adapter.cpp src\ParticleSystem.cpp src\Shader.cpp src\FireworksShell.cpp src/Timeline.cpp
+IMGUI_DIR = vendors/imgui
+COMMON_SRCS += $(IMGUI_DIR)/imgui.cpp $(IMGUI_DIR)/imgui_demo.cpp $(IMGUI_DIR)/imgui_draw.cpp $(IMGUI_DIR)/imgui_tables.cpp $(IMGUI_DIR)/imgui_widgets.cpp
+COMMON_SRCS += $(IMGUI_DIR)/imgui_impl_glfw.cpp $(IMGUI_DIR)/imgui_impl_opengl3.cpp
 
 # Percorsi dove cercare i file di intestazione (.h)
 # Il flag -I dice al compilatore "cerca anche qui"
