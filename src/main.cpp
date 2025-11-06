@@ -14,7 +14,7 @@
 
 #include "Shader.h"
 #include "ParticleSystem.h"
-#include "FireworksShell.h"
+#include "Shell.h"
 #include "Timeline.h"
 #include "FireworkTypes.h"
 
@@ -119,7 +119,7 @@ int main()
     // Creiamo un "pool" di proiettili. Invece di creare e distruggere oggetti,
     // li riutilizziamo. Questo è molto più efficiente.
     const int MAX_SHELLS = 10;
-    std::vector<FireworksShell> shellPool;
+    std::vector<Shell> shellPool;
     for (int i = 0; i < MAX_SHELLS; ++i)
         shellPool.emplace_back(particleSystem); // emplace_back costruisce l'oggetto direttamente nel vettore
 

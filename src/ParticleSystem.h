@@ -28,7 +28,7 @@ public:
     void Update(float dt); // Gestisce solo la fisica delle particelle VIVE
     void Draw();
 
-    // Permette a un sistema esterno (come FireworksShell) di rianimare una particella
+    // Permette a un sistema esterno (come Shell) di rianimare una particella
     // con proprietà specifiche.
     void RespawnParticle(Particle &particleProperties);
 

@@ -14,7 +14,7 @@ public:
     // Aggiorna lo stato della timeline (es. avanza il tempo se in play)
     // Ritorna un vettore di eventi che devono essere eseguiti IN QUESTO FRAME.
     // Questo design disaccoppia la timeline dal sistema di fuochi d'artificio.
-    // La timeline non sa nulla di "FireworksShell", sa solo di "FireworkEvent".
+    // La timeline non sa nulla di "Shell", sa solo di "FireworkEvent".
     std::vector<const FireworkEvent *> Update(float dt);
 
     void DrawUI(int windowWidth, int windowHeight, const int timelineHeight, const std::map<int, FireworkType> lib);

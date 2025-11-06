@@ -12,7 +12,7 @@ enum class ShellState
     INACTIVE  // È spento e pronto per essere riutilizzato
 };
 
-class FireworksShell
+class Shell
 {
 public:
     // Il costruttore ora prende una reference a un sistema di particelle che userà
@@ -20,7 +20,7 @@ public:
     // Invece di creare un ParticleSystem al suo interno, ne usa uno fornito dall'esterno.
     // Questo è ottimo perché permette a più proiettili di condividere lo stesso sistema di particelle,
     // risparmiando memoria e draw calls.
-    FireworksShell(ParticleSystem &particleSystem);
+    Shell(ParticleSystem &particleSystem);
 
     void Launch(const FireworkEvent &event, const FireworkType *type);
     void Update(float dt);

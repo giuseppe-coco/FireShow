@@ -1,11 +1,11 @@
-#include "FireworksShell.h"
+#include "Shell.h"
 #include "FireworkTypes.h"
 #include <glm/gtc/random.hpp>
 
-FireworksShell::FireworksShell(ParticleSystem &ps)
+Shell::Shell(ParticleSystem &ps)
     : particleSystem(ps), state(ShellState::INACTIVE) {}
 
-void FireworksShell::Launch(const FireworkEvent &event, const FireworkType *type)
+void Shell::Launch(const FireworkEvent &event, const FireworkType *type)
 {
     this->position = event.startPosition;
     this->velocity = event.startVelocity;
@@ -15,7 +15,7 @@ void FireworksShell::Launch(const FireworkEvent &event, const FireworkType *type
     this->state = ShellState::RISING;
 }
 
-void FireworksShell::Update(float dt)
+void Shell::Update(float dt)
 {
     // Se il proiettile non è attivo, non fare nulla.
     if (state == ShellState::INACTIVE)
@@ -49,7 +49,7 @@ void FireworksShell::Update(float dt)
     // di diventare 'INACTIVE', ma per ora lo semplifichiamo.
 }
 
-void FireworksShell::emitTrailParticle()
+void Shell::emitTrailParticle()
 {
     // Chiediamo al sistema di particelle di "rianimare" una delle sue particelle morte
     // e di trasformarla in una particella di scia.
@@ -61,11 +61,20 @@ void FireworksShell::emitTrailParticle()
     trailParticle.Velocity = -this->velocity * 0.1f + glm::ballRand(0.5f);
     trailParticle.Color = glm::vec4(1.0f, 0.8f, 0.5f, 1.0f); // Colore da scintilla
     trailParticle.Life = 0.5f;                               // Vita breve per la scia
+    trailParticle.initialLife = 0.5f;
+    
+    // Colori per la scia (es. da arancione brillante a grigio fumo scuro)
+    trailParticle.startColor = glm::vec3(1.0f, 0.8f, 0.5f);
+    trailParticle.endColor = glm::vec3(0.2f, 0.2f, 0.2f);
+
+    // La scia dovrebbe essere influenzata dalla gravità normale
+    trailParticle.gravityModifier = 1.0f; // <<-- IMPORTANTE: Dagli un valore sensato!
 
     particleSystem.RespawnParticle(trailParticle);
 }
 
-void FireworksShell::explode()
+// Create `explosionType->particleCount` `Particle`s
+void Shell::explode()
 {
     if (!explosionType) return; // Sicurezza: non esplodere se non c'è un tipo definito
 
