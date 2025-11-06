@@ -4,16 +4,15 @@
 #include <string>
 
 // Definisce le proprietà di un'esplosione di fuochi d'artificio.
-// Questa è la nostra definizione "data-driven".
 struct FireworkType
 {
     int id;
     std::string name = "New Firework";
 
     // Parametri dell'esplosione
-    int particleCount = 500;
-    float minLifetime = 1.0f;
-    float maxLifetime = 2.0f;
+    int particleCount = 100;
+    float minLifetime = 0.8f;
+    float maxLifetime = 1.3f;
     float minSpeed = 15.0f;
     float maxSpeed = 25.0f;
     glm::vec3 startColor = glm::vec3(1.0f, 0.5f, 0.2f); // Arancione

@@ -41,12 +41,9 @@ void Shell::Update(float dt)
         if (fuse <= 0.0f)
         {
             explode();
-            state = ShellState::EXPLODED;
+            state = ShellState::INACTIVE;
         }
     }
-    // NOTA: Una volta esploso, il proiettile diventa effettivamente "morto".
-    // Potremmo aggiungere uno stato 'EXPLODED' che dura qualche secondo prima
-    // di diventare 'INACTIVE', ma per ora lo semplifichiamo.
 }
 
 void Shell::emitTrailParticle()

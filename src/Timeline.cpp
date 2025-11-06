@@ -28,9 +28,7 @@ std::vector<const FireworkEvent *> Timeline::Update(float dt)
             // Un evento scatta se il suo tempo di trigger era nel passato
             // ma ora è nel presente.
             if (event.triggerTime > previousTime && event.triggerTime <= currentTime)
-            {
                 triggeredEvents.push_back(&event);
-            }
         }
 
         if (currentTime > maxTime)
@@ -42,14 +40,18 @@ std::vector<const FireworkEvent *> Timeline::Update(float dt)
     return triggeredEvents;
 }
 
-void Timeline::DrawUI(int windowWidth, int windowHeight, const int timelineHeight, const std::map<int, FireworkType> lib)
+void Timeline::DrawUI(
+    const int timelineWidth,
+    const int windowHeight,
+    const int timelineHeight,
+    std::map<int, FireworkType> &lib)
 {
     // Imposta la posizione e la dimensione della prossima finestra di ImGui
     ImGui::SetNextWindowPos(ImVec2(0, windowHeight - timelineHeight)); // Posizione (0,0) in alto a sinistra dello schermo
-    ImGui::SetNextWindowSize(ImVec2(windowWidth, timelineHeight));
+    ImGui::SetNextWindowSize(ImVec2(timelineWidth, timelineHeight));
 
-    // Aggiungi flag per renderla "fissa": senza titolo, non ridimensionabile, non spostabile
-    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+    // Aggiungi flag per renderla "fissa": non ridimensionabile, non spostabile
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
 
     // Inizia una nuova finestra di ImGui. Tutto quello che disegneremo fino a ImGui::End()
     // apparirà in questa finestra.
@@ -77,7 +79,11 @@ void Timeline::DrawUI(int windowWidth, int windowHeight, const int timelineHeigh
     // --- Logica per aggiungere un nuovo evento ---
     // Dropdown per selezionare il tipo di fuoco da aggiungere
     static int selectedFireworkId = 0; // static per mantenere la selezione tra i frame
-    if (ImGui::BeginCombo("Firework Type", lib.count(selectedFireworkId) ? lib.at(selectedFireworkId).name.c_str() : ""))
+    if (ImGui::BeginCombo(
+            "Firework Type",
+            lib.count(selectedFireworkId) ? lib.at(selectedFireworkId).name.c_str() : "",
+            ImGuiComboFlags_WidthFitPreview)
+        )
     {
         for (const auto &pair : lib)
         {

@@ -11,16 +11,17 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <windows.h>
 
 #include "Shader.h"
 #include "ParticleSystem.h"
 #include "Shell.h"
 #include "Timeline.h"
 #include "FireworkTypes.h"
+#include "Editor.h"
 
 // --- Impostazioni ---
-const unsigned int SCR_WIDTH = 1280;
-const unsigned int SCR_HEIGHT = 720;
+#define SETTINGS_HEIGHT 250
 
 // --- Timing ---
 float deltaTime = 0.0f; // Tempo tra il frame corrente e l'ultimo frame
@@ -39,6 +40,8 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    const unsigned int SCR_WIDTH = glfwGetVideoMode(glfwGetPrimaryMonitor())->width;
+    const unsigned int SCR_HEIGHT = glfwGetVideoMode(glfwGetPrimaryMonitor())->height;
 
     GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Fireworks Simulator", NULL, NULL);
     if (window == NULL)
@@ -69,21 +72,10 @@ int main()
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330");
 
-    // --- LIBRERIA DI FUOCHI D'ARTIFICIO ---
-    std::map<int, FireworkType> fireworkLibrary;
-    int nextFireworkTypeId = 0;
-
-    // Creiamo un tipo di default
-    FireworkType defaultType;
-    defaultType.id = nextFireworkTypeId++;
-    defaultType.name = "Default Peony";
-    fireworkLibrary[defaultType.id] = defaultType;
-
-    // Puntatore al tipo di fuoco attualmente selezionato nell'editor
-    FireworkType *selectedType = &fireworkLibrary[0];
-
     // --- Creazione risorse ---
     Timeline timeline;
+    Editor editor;
+    std::map<int, FireworkType> &lib = editor.getFireworksLibrary();
     Shader groundShader("shaders/ground.vert", "shaders/ground.frag");
 
     float groundVertices[] = {
@@ -136,54 +128,17 @@ int main()
 
         int windowWidth, windowHeight;
         glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
-        const int timelineHeight = 200; // Altezza in pixel riservata alla timeline
         // Imposta il viewport per la scena 3D nell'area superiore
-        glViewport(0, timelineHeight, windowWidth, windowHeight - timelineHeight);
+        glViewport(0, SETTINGS_HEIGHT, windowWidth, windowHeight - SETTINGS_HEIGHT);
         
         // --- Inizia un nuovo frame di ImGui ---
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        timeline.DrawUI(windowWidth, windowHeight, timelineHeight, fireworkLibrary);
+        timeline.DrawUI(windowWidth / 2.0f, windowHeight, SETTINGS_HEIGHT, lib);
+        editor.DrawUI(windowWidth / 2.0, windowHeight, SETTINGS_HEIGHT);
 
-        // --- DISEGNA UI EDITOR FUOCHI D'ARTIFICIO ---
-        ImGui::Begin("Firework Editor");
-        // --- Lista dei tipi di fuochi (la nostra libreria) ---
-        if (ImGui::Button("Add New Type"))
-        {
-            FireworkType newType;
-            newType.id = nextFireworkTypeId++;
-            newType.name = "New Firework " + std::to_string(newType.id);
-            fireworkLibrary[newType.id] = newType;
-            selectedType = &fireworkLibrary[newType.id]; // Seleziona il nuovo tipo
-        }
-        ImGui::Separator();
-        ImGui::Text("Library:");
-        for (auto &pair : fireworkLibrary)
-        {
-            // Seleziona un tipo dalla lista
-            if (ImGui::Selectable(pair.second.name.c_str(), selectedType && selectedType->id == pair.second.id))
-                selectedType = &pair.second;
-        }
-        ImGui::Separator();
-        // --- Editor delle proprietà del tipo selezionato ---
-        if (selectedType)
-        {
-            ImGui::Text("Editing: %s", selectedType->name.c_str());
-            char nameBuffer[128];
-            strncpy(nameBuffer, selectedType->name.c_str(), sizeof(nameBuffer));
-            if (ImGui::InputText("Name", nameBuffer, sizeof(nameBuffer)))
-                selectedType->name = nameBuffer;
-
-            ImGui::DragInt("Particle Count", &selectedType->particleCount, 10, 10, 10000);
-            ImGui::DragFloatRange2("Lifetime", &selectedType->minLifetime, &selectedType->maxLifetime, 0.1f, 0.1f, 10.0f);
-            ImGui::DragFloatRange2("Speed", &selectedType->minSpeed, &selectedType->maxSpeed, 0.5f, 0.0f, 100.0f);
-            ImGui::ColorEdit3("Start Color", (float *)&selectedType->startColor);
-            ImGui::ColorEdit3("End Color", (float *)&selectedType->endColor);
-            ImGui::SliderFloat("Gravity Modifier", &selectedType->gravityModifier, 0.0f, 2.0f);
-        }
-        ImGui::End();
 
         // --- Input ---
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -195,11 +150,11 @@ int main()
         {
             for (const auto *eventData : eventsToTrigger)
             {
-                if (fireworkLibrary.count(eventData->fireworkTypeId))
+                if (lib.count(eventData->fireworkTypeId))
                 {
-                    const FireworkType *typeToLaunch = &fireworkLibrary.at(eventData->fireworkTypeId);
+                    const FireworkType *typeToLaunch = &lib.at(eventData->fireworkTypeId);
                     // Cerca un proiettile inattivo e lancialo con i dati dell'evento
-                    for (auto &shell : shellPool)
+                    for (auto &shell : shellPool )
                     {
                         if (shell.GetState() == ShellState::INACTIVE)
                         {
@@ -213,19 +168,19 @@ int main()
 
         // Aggiorna tutti i proiettili attivi
         for (auto &shell : shellPool)
-        {
             shell.Update(deltaTime);
-        }
+
         // Aggiorna la fisica di tutte le particelle
         particleSystem.Update(deltaTime);
 
         // --- Rendering ---
-        glClearColor(0.02f, 0.02f, 0.05f, 1.0f); // Un blu scuro per il cielo notturno
+        glClearColor(0.10, 0.10, 0.22, 1.0);     // Un blu scuro
+        // glClearColor(0.02f, 0.02f, 0.05f, 1.0f); // Un blu scuro per il cielo notturno
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glEnable(GL_DEPTH_TEST);
 
         // Setup delle matrici di trasformazione
-        float aspectRatio = (float)windowWidth / (float)(windowHeight - timelineHeight);
+        float aspectRatio = (float)windowWidth / (float)(windowHeight - SETTINGS_HEIGHT);
         glm::mat4 projection = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 100.0f);
         glm::mat4 view = glm::lookAt(cameraPos, glm::vec3(0.0f, 10.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 

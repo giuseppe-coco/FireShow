@@ -13,5 +13,5 @@ void main()
 
     // Applichiamo un semplice "fog" o oscuramento per dare un'atmosfera notturna.
     // In questo modo la texture, anche se chiara, apparirà scura nella scena.
-    FragColor = texColor * vec4(0.2, 0.2, 0.2, 1.0);
+    FragColor = texColor * vec4(0.3, 0.3, 0.3, 1.0);
 }

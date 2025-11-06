@@ -17,7 +17,7 @@ public:
     // La timeline non sa nulla di "Shell", sa solo di "FireworkEvent".
     std::vector<const FireworkEvent *> Update(float dt);
 
-    void DrawUI(int windowWidth, int windowHeight, const int timelineHeight, const std::map<int, FireworkType> lib);
+    void DrawUI(int windowWidth, int windowHeight, const int timelineHeight, std::map<int, FireworkType>& lib);
 
     void Play();
     void Pause();
