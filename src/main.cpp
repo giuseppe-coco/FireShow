@@ -10,11 +10,13 @@
 
 #include <iostream>
 #include <vector>
+#include <map>
 
 #include "Shader.h"
 #include "ParticleSystem.h"
 #include "FireworksShell.h"
 #include "Timeline.h"
+#include "FireworkTypes.h"
 
 // --- Impostazioni ---
 const unsigned int SCR_WIDTH = 1280;
@@ -66,6 +68,19 @@ int main()
     // Inizializza i backend
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330");
+
+    // --- LIBRERIA DI FUOCHI D'ARTIFICIO ---
+    std::map<int, FireworkType> fireworkLibrary;
+    int nextFireworkTypeId = 0;
+
+    // Creiamo un tipo di default
+    FireworkType defaultType;
+    defaultType.id = nextFireworkTypeId++;
+    defaultType.name = "Default Peony";
+    fireworkLibrary[defaultType.id] = defaultType;
+
+    // Puntatore al tipo di fuoco attualmente selezionato nell'editor
+    FireworkType *selectedType = &fireworkLibrary[0];
 
     // --- Creazione risorse ---
     Timeline timeline;
@@ -119,36 +134,60 @@ int main()
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        // --- Input ---
-        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-            glfwSetWindowShouldClose(window, true);
-
+        int windowWidth, windowHeight;
+        glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
+        const int timelineHeight = 200; // Altezza in pixel riservata alla timeline
+        // Imposta il viewport per la scena 3D nell'area superiore
+        glViewport(0, timelineHeight, windowWidth, windowHeight - timelineHeight);
+        
         // --- Inizia un nuovo frame di ImGui ---
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-        timeline.DrawUI();
 
-        // // --- Logica di lancio ---
-        // launchTimer += deltaTime;
-        // if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && launchTimer > 0.5f) // Limita il lancio a uno ogni 0.5s
-        // {
-        //     // Cerca un proiettile inattivo nel pool
-        //     for (auto &shell : shellPool)
-        //     {
-        //         if (shell.GetState() == ShellState::INACTIVE)
-        //         {
-        //             // Trovato! Lo lanciamo.
-        //             glm::vec3 startPos = glm::vec3((rand() % 40) - 20, 0.0f, (rand() % 20) - 10);
-        //             glm::vec3 startVel = glm::vec3(0.0f, 10.0f + (rand() % 10), 0.0f);
-        //             float fuse = 2.0f + (rand() % 100) / 100.0f;
+        timeline.DrawUI(windowWidth, windowHeight, timelineHeight, fireworkLibrary);
 
-        //             shell.Launch(startPos, startVel, fuse);
-        //             launchTimer = 0.0f; // Resetta il timer
-        //             break;              // Esci dal ciclo una volta lanciato un proiettile
-        //         }
-        //     }
-        // }
+        // --- DISEGNA UI EDITOR FUOCHI D'ARTIFICIO ---
+        ImGui::Begin("Firework Editor");
+        // --- Lista dei tipi di fuochi (la nostra libreria) ---
+        if (ImGui::Button("Add New Type"))
+        {
+            FireworkType newType;
+            newType.id = nextFireworkTypeId++;
+            newType.name = "New Firework " + std::to_string(newType.id);
+            fireworkLibrary[newType.id] = newType;
+            selectedType = &fireworkLibrary[newType.id]; // Seleziona il nuovo tipo
+        }
+        ImGui::Separator();
+        ImGui::Text("Library:");
+        for (auto &pair : fireworkLibrary)
+        {
+            // Seleziona un tipo dalla lista
+            if (ImGui::Selectable(pair.second.name.c_str(), selectedType && selectedType->id == pair.second.id))
+                selectedType = &pair.second;
+        }
+        ImGui::Separator();
+        // --- Editor delle proprietà del tipo selezionato ---
+        if (selectedType)
+        {
+            ImGui::Text("Editing: %s", selectedType->name.c_str());
+            char nameBuffer[128];
+            strncpy(nameBuffer, selectedType->name.c_str(), sizeof(nameBuffer));
+            if (ImGui::InputText("Name", nameBuffer, sizeof(nameBuffer)))
+                selectedType->name = nameBuffer;
+
+            ImGui::DragInt("Particle Count", &selectedType->particleCount, 10, 10, 10000);
+            ImGui::DragFloatRange2("Lifetime", &selectedType->minLifetime, &selectedType->maxLifetime, 0.1f, 0.1f, 10.0f);
+            ImGui::DragFloatRange2("Speed", &selectedType->minSpeed, &selectedType->maxSpeed, 0.5f, 0.0f, 100.0f);
+            ImGui::ColorEdit3("Start Color", (float *)&selectedType->startColor);
+            ImGui::ColorEdit3("End Color", (float *)&selectedType->endColor);
+            ImGui::SliderFloat("Gravity Modifier", &selectedType->gravityModifier, 0.0f, 2.0f);
+        }
+        ImGui::End();
+
+        // --- Input ---
+        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+            glfwSetWindowShouldClose(window, true);
 
         // Aggiorna la timeline e ottieni gli eventi da eseguire
         auto eventsToTrigger = timeline.Update(deltaTime);
@@ -156,19 +195,22 @@ int main()
         {
             for (const auto *eventData : eventsToTrigger)
             {
-                // Cerca un proiettile inattivo e lancialo con i dati dell'evento
-                for (auto &shell : shellPool)
+                if (fireworkLibrary.count(eventData->fireworkTypeId))
                 {
-                    if (shell.GetState() == ShellState::INACTIVE)
+                    const FireworkType *typeToLaunch = &fireworkLibrary.at(eventData->fireworkTypeId);
+                    // Cerca un proiettile inattivo e lancialo con i dati dell'evento
+                    for (auto &shell : shellPool)
                     {
-                        shell.Launch(eventData->startPosition, eventData->startVelocity, eventData->fuseTime);
-                        break; // Lancia solo un proiettile per evento e passa al prossimo
+                        if (shell.GetState() == ShellState::INACTIVE)
+                        {
+                            shell.Launch(*eventData, typeToLaunch);
+                            break; // Lancia solo un proiettile per evento e passa al prossimo
+                        }
                     }
                 }
             }
         }
 
-        // --- Aggiornamenti ---
         // Aggiorna tutti i proiettili attivi
         for (auto &shell : shellPool)
         {
@@ -183,7 +225,8 @@ int main()
         glEnable(GL_DEPTH_TEST);
 
         // Setup delle matrici di trasformazione
-        glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        float aspectRatio = (float)windowWidth / (float)(windowHeight - timelineHeight);
+        glm::mat4 projection = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 100.0f);
         glm::mat4 view = glm::lookAt(cameraPos, glm::vec3(0.0f, 10.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
         // --- Disegna il Terreno ---

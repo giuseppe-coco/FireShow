@@ -1,15 +1,17 @@
 #include "FireworksShell.h"
+#include "FireworkTypes.h"
 #include <glm/gtc/random.hpp>
 
 FireworksShell::FireworksShell(ParticleSystem &ps)
     : particleSystem(ps), state(ShellState::INACTIVE) {}
 
-void FireworksShell::Launch(glm::vec3 startPosition, glm::vec3 startVelocity, float fuseTime)
+void FireworksShell::Launch(const FireworkEvent &event, const FireworkType *type)
 {
-    this->position = startPosition;
-    this->velocity = startVelocity;
-    this->fuse = fuseTime;
-    this->trailTimer = 0.0f; // Resetta il timer della scia
+    this->position = event.startPosition;
+    this->velocity = event.startVelocity;
+    this->fuse = event.fuseTime;
+    this->explosionType = type; // Salva il tipo di fuoco per l'esplosione
+    this->trailTimer = 0.0f; // resetta il timer della scia
     this->state = ShellState::RISING;
 }
 
@@ -65,17 +67,23 @@ void FireworksShell::emitTrailParticle()
 
 void FireworksShell::explode()
 {
-    // Quando esplode, genera un gran numero di particelle
-    // tutte in una volta, usando la posizione corrente del proiettile.
-    unsigned int explosionParticles = 500;
-    for (unsigned int i = 0; i < explosionParticles; ++i)
+    if (!explosionType) return; // Sicurezza: non esplodere se non c'è un tipo definito
+
+    for (unsigned int i = 0; i < explosionType->particleCount; ++i)
     {
         Particle p;
         p.Position = this->position;
-        float randomForce = 15.0f + (rand() % 100) / 100.0f * 10.0f; // Forza tra 15 e 25
-        p.Velocity = glm::ballRand(1.0f) * randomForce;
-        p.Color = glm::vec4(0.5f + (rand() % 100) / 200.0f, 0.5f + (rand() % 100) / 200.0f, 1.0f, 1.0f); // Colori blu/viola
-        p.Life = 1.0f + (rand() % 100) / 100.0f;
+
+        float speed = explosionType->minSpeed + (rand() % 100 / 100.0f) * (explosionType->maxSpeed - explosionType->minSpeed);
+        p.Velocity = glm::ballRand(1.0f) * speed;
+
+        p.startColor = explosionType->startColor;
+        p.endColor = explosionType->endColor;
+
+        p.Life = explosionType->minLifetime + (rand() % 100 / 100.0f) * (explosionType->maxLifetime - explosionType->minLifetime);
+        p.initialLife = p.Life; // Salva la vita iniziale per l'interpolazione
+
+        p.gravityModifier = explosionType->gravityModifier;
 
         particleSystem.RespawnParticle(p);
     }

@@ -1,21 +1,10 @@
 #pragma once
 
 #include <vector>
+#include <map>
 #include <glm/glm.hpp>
 
-// Struttura che definisce un singolo evento di lancio sulla timeline
-struct FireworkEvent
-{
-    float triggerTime; // Il momento in cui l'evento deve scattare
-
-    // Parametri per il lancio del proiettile
-    glm::vec3 startPosition;
-    glm::vec3 startVelocity;
-    float fuseTime;
-
-    // Aggiungiamo un ID unico per poter gestire la selezione e la cancellazione nell'UI
-    int id;
-};
+#include "FireworkTypes.h"
 
 class Timeline
 {
@@ -28,8 +17,7 @@ public:
     // La timeline non sa nulla di "FireworksShell", sa solo di "FireworkEvent".
     std::vector<const FireworkEvent *> Update(float dt);
 
-    // Disegna l'interfaccia della timeline usando ImGui
-    void DrawUI();
+    void DrawUI(int windowWidth, int windowHeight, const int timelineHeight, const std::map<int, FireworkType> lib);
 
     void Play();
     void Pause();

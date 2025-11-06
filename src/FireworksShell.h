@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ParticleSystem.h"
+#include "FireworkTypes.h"
 #include <glm/glm.hpp>
 
 // Enum per rappresentare lo stato corrente del proiettile
@@ -21,7 +22,7 @@ public:
     // risparmiando memoria e draw calls.
     FireworksShell(ParticleSystem &particleSystem);
 
-    void Launch(glm::vec3 startPosition, glm::vec3 startVelocity, float fuseTime);
+    void Launch(const FireworkEvent &event, const FireworkType *type);
     void Update(float dt);
 
     ShellState GetState() const { return state; }
@@ -35,6 +36,8 @@ private:
     float trailTimer; // Timer per emettere le particelle della scia
 
     ShellState state;
+    
+    const FireworkType* explosionType;
 
     void emitTrailParticle();
     void explode();

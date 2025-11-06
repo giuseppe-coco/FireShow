@@ -54,9 +54,16 @@ void ParticleSystem::Update(float dt)
             // La particella è viva, aggiorna la sua posizione
             p.Position += p.Velocity * dt;
             // Applichiamo una semplice gravità
-            p.Velocity.y -= 9.81f * 0.1f * dt; // TODO: ask AI
+            p.Velocity.y -= 9.81f * p.gravityModifier * dt;
+
+            // Calcola il progresso della vita (da 1.0 a 0.0)
+            float lifeProgress = p.Life / p.initialLife;
+            
+            // Interpola il colore tra startColor e endColor
+            glm::vec3 currentColor = glm::mix(p.endColor, p.startColor, lifeProgress);
+            
             // Facciamo sfumare la particella verso la trasparenza
-            p.Color.a = p.Life * 2.0f; //TODO: ask AI Moltiplicato per 2 per un fade-out più veloce
+            p.Color = glm::vec4(currentColor, p.Life * 2.0f); // Moltiplicato per 2 per un fade-out più veloce
         }
     }
 
