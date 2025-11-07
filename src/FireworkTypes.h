@@ -3,12 +3,18 @@
 #include <glm/glm.hpp>
 #include <string>
 
+enum class FireworkFamily
+{
+    Peony,
+    Chrysanthemum,
+    Willow
+};
+
 // Definisce le proprietà di un'esplosione di fuochi d'artificio.
 struct FireworkType
 {
     int id;
     std::string name = "New Firework";
-
     // Parametri dell'esplosione
     int particleCount = 100;
     float minLifetime = 0.8f;
@@ -17,7 +23,8 @@ struct FireworkType
     float maxSpeed = 25.0f;
     glm::vec3 startColor = glm::vec3(1.0f, 0.5f, 0.2f); // Arancione
     glm::vec3 endColor = glm::vec3(0.5f, 0.0f, 0.0f);   // Rosso scuro
-    float gravityModifier = 0.5f;                       // Fattore di scala per la gravità
+    float gravityModifier = 1.0f;                       // Fattore di scala per la gravità
+    FireworkFamily family = FireworkFamily::Peony;
 };
 
 // Struttura che definisce un singolo evento di lancio sulla timeline

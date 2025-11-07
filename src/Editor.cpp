@@ -57,7 +57,7 @@ void Editor::DrawUI(
         ImGui::DragFloatRange2("Speed", &selectedType->minSpeed, &selectedType->maxSpeed, 0.5f, 0.0f, 100.0f);
         ImGui::ColorEdit3("Start Color", (float *)&selectedType->startColor);
         ImGui::ColorEdit3("End Color", (float *)&selectedType->endColor);
-        ImGui::SliderFloat("Gravity Modifier", &selectedType->gravityModifier, 0.0f, 2.0f);
+        // ImGui::SliderFloat("Gravity Modifier", &selectedType->gravityModifier, 0.0f, 2.0f);
     }
     ImGui::End();
 }

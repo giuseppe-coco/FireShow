@@ -12,6 +12,7 @@
 #include <vector>
 #include <map>
 #include <windows.h>
+#include <memory> // Per std::unique_ptr
 
 #include "Shader.h"
 #include "ParticleSystem.h"
@@ -19,9 +20,11 @@
 #include "Timeline.h"
 #include "FireworkTypes.h"
 #include "Editor.h"
+#include "Shell.h"
+#include "PeonyShell.h"
 
 // --- Impostazioni ---
-#define SETTINGS_HEIGHT 250
+#define SETTINGS_HEIGHT 270
 
 // --- Timing ---
 float deltaTime = 0.0f; // Tempo tra il frame corrente e l'ultimo frame
@@ -77,6 +80,20 @@ int main()
     Editor editor;
     std::map<int, FireworkType> &lib = editor.getFireworksLibrary();
     Shader groundShader("shaders/ground.vert", "shaders/ground.frag");
+    Shader particleShader("shaders/particle.vert", "shaders/particle.frag");
+
+    ParticleSystem particleSystem(particleShader, 10000); // Creiamo un sistema con 10000 particelle
+
+    // --- POOL DI PROIETTILI ---
+    // Creiamo un "pool" di proiettili. Invece di creare e distruggere oggetti, li riutilizziamo. Questo è molto più efficiente.
+    // std::unique_ptr gestisce automaticamente la memoria, prevenendo memory leak.
+    const int MAX_SHELLS = 20;
+    std::vector<std::unique_ptr<Shell>> shellPool;
+    // Per ora, popoliamo il pool solo con Peonie, usando il tipo di default
+    for (int i = 0; i < MAX_SHELLS; ++i)
+    {
+        shellPool.push_back(std::make_unique<PeonyShell>(particleSystem, &lib[0]));
+    }
 
     float groundVertices[] = {
         // positions          // texture Coords
@@ -104,16 +121,6 @@ int main()
     unsigned int groundTexture = loadTexture("textures/ground.jpg");
     groundShader.use();
     groundShader.setInt("groundTexture", 0);
-
-    Shader particleShader("shaders/particle.vert", "shaders/particle.frag");
-    ParticleSystem particleSystem(particleShader, 10000); // Creiamo un sistema con 10000 particelle
-
-    // Creiamo un "pool" di proiettili. Invece di creare e distruggere oggetti,
-    // li riutilizziamo. Questo è molto più efficiente.
-    const int MAX_SHELLS = 10;
-    std::vector<Shell> shellPool;
-    for (int i = 0; i < MAX_SHELLS; ++i)
-        shellPool.emplace_back(particleSystem); // emplace_back costruisce l'oggetto direttamente nel vettore
 
     // --- Render Loop ---
     while (!glfwWindowShouldClose(window))
@@ -154,11 +161,11 @@ int main()
                 {
                     const FireworkType *typeToLaunch = &lib.at(eventData->fireworkTypeId);
                     // Cerca un proiettile inattivo e lancialo con i dati dell'evento
-                    for (auto &shell : shellPool )
+                    for (auto &shellPtr : shellPool )
                     {
-                        if (shell.GetState() == ShellState::INACTIVE)
+                        if (shellPtr->GetState() == ShellState::INACTIVE)
                         {
-                            shell.Launch(*eventData, typeToLaunch);
+                            shellPtr->Launch(*eventData);
                             break; // Lancia solo un proiettile per evento e passa al prossimo
                         }
                     }
@@ -168,7 +175,7 @@ int main()
 
         // Aggiorna tutti i proiettili attivi
         for (auto &shell : shellPool)
-            shell.Update(deltaTime);
+            shell->Update(deltaTime);
 
         // Aggiorna la fisica di tutte le particelle
         particleSystem.Update(deltaTime);

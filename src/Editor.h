@@ -18,6 +18,5 @@ private:
 public: 
     Editor();
     std::map<int, FireworkType>& getFireworksLibrary() { return fireworksLibrary; }
-    void Update(float dt); // TODO
     void DrawUI(int windowWidth, int windowHeight, const int editorHeight);
 };

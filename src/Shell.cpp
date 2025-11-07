@@ -5,12 +5,11 @@
 Shell::Shell(ParticleSystem &ps)
     : particleSystem(ps), state(ShellState::INACTIVE) {}
 
-void Shell::Launch(const FireworkEvent &event, const FireworkType *type)
+void Shell::Launch(const FireworkEvent &event)
 {
     this->position = event.startPosition;
     this->velocity = event.startVelocity;
     this->fuse = event.fuseTime;
-    this->explosionType = type; // Salva il tipo di fuoco per l'esplosione
     this->trailTimer = 0.0f; // resetta il timer della scia
     this->state = ShellState::RISING;
 }
@@ -68,29 +67,4 @@ void Shell::emitTrailParticle()
     trailParticle.gravityModifier = 1.0f; // <<-- IMPORTANTE: Dagli un valore sensato!
 
     particleSystem.RespawnParticle(trailParticle);
-}
-
-// Create `explosionType->particleCount` `Particle`s
-void Shell::explode()
-{
-    if (!explosionType) return; // Sicurezza: non esplodere se non c'è un tipo definito
-
-    for (unsigned int i = 0; i < explosionType->particleCount; ++i)
-    {
-        Particle p;
-        p.Position = this->position;
-
-        float speed = explosionType->minSpeed + (rand() % 100 / 100.0f) * (explosionType->maxSpeed - explosionType->minSpeed);
-        p.Velocity = glm::ballRand(1.0f) * speed;
-
-        p.startColor = explosionType->startColor;
-        p.endColor = explosionType->endColor;
-
-        p.Life = explosionType->minLifetime + (rand() % 100 / 100.0f) * (explosionType->maxLifetime - explosionType->minLifetime);
-        p.initialLife = p.Life; // Salva la vita iniziale per l'interpolazione
-
-        p.gravityModifier = explosionType->gravityModifier;
-
-        particleSystem.RespawnParticle(p);
-    }
 }
