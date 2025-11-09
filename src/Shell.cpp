@@ -1,6 +1,7 @@
 #include "Shell.h"
 #include "FireworkTypes.h"
 #include "PeonyShell.h"
+#include "ChrysanthemumShell.h"
 
 #include <glm/gtc/random.hpp>
 #include <memory>
@@ -49,11 +50,10 @@ void Shell::Update(float dt)
     }
 }
 
+// Chiediamo al sistema di particelle di "rianimare" una delle sue particelle morte
+// e di trasformarla in una particella di scia.
 void Shell::emitTrailParticle()
 {
-    // Chiediamo al sistema di particelle di "rianimare" una delle sue particelle morte
-    // e di trasformarla in una particella di scia.
-
     // Parametri per la particella di scia
     Particle trailParticle;
     trailParticle.Position = this->position;
@@ -76,10 +76,10 @@ std::unique_ptr<Shell> Shell::createShell(const Firework* f, ParticleSystem &ps)
     {
     case FireworkFamily::Peony:
         return std::make_unique<PeonyShell>(ps, f);
-    // case FireworkFamily::Chrysanthemum:
-    //     return std::make_unique<ChrysanthemumShell>(ps, type);
+    case FireworkFamily::Chrysanthemum:
+        return std::make_unique<ChrysanthemumShell>(ps, f);
     // case FireworkFamily::Willow:
-    //     return std::make_unique<WillowShell>(ps, type);
+    //     return std::make_unique<WillowShell>(ps, f);
     default:
         // Ritorna un tipo di default o nullptr se il tipo non è riconosciuto
         return std::make_unique<PeonyShell>(ps, f);

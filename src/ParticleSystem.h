@@ -17,7 +17,11 @@ struct Particle
     glm::vec3 endColor;
     float initialLife;
 
-    Particle() : Position(0.0f), Velocity(0.0f), Color(1.0f), Life(0.0f) {}
+    bool isEmitter;     // Questa particella genera altre particelle?
+    float emitInterval; // Ogni quanti secondi emette (es. 0.01s)
+    float emitTimer;    // Timer interno per tracciare il tempo dall'ultima emissione
+
+    Particle() : Position(0.0f), Velocity(0.0f), Color(1.0f), Life(0.0f), isEmitter(false) {}
 };
 
 class ParticleSystem

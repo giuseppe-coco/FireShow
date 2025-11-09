@@ -1,17 +1,18 @@
-#include "PeonyShell.h"
+#include "ChrysanthemumShell.h"
 #include "Utils.h"
 #include <iostream>
 
 #include <glm/gtc/random.hpp>
 
 // Il costruttore inizializza la classe base e memorizza il tipo di fuoco.
-PeonyShell::PeonyShell(ParticleSystem &particleSystem, const Firework *f)
+ChrysanthemumShell::ChrysanthemumShell(ParticleSystem &particleSystem, const Firework *f)
     : Shell(particleSystem), f(f) {}
 
-void PeonyShell::explode()
+void ChrysanthemumShell::explode()
 {
     if (!f)
         return;
+        
     for (unsigned int i = 0; i < f->particleCount; ++i)
     {
         Particle p;
@@ -25,6 +26,12 @@ void PeonyShell::explode()
         p.endColor = f->endColor;
         p.Life = sampleGaussian((f->minLifetime + f->maxLifetime) / 2.0, (f->minLifetime - f->maxLifetime) / 6.0);
         p.initialLife = p.Life; // Salva la vita iniziale per l'interpolazione
+
+        particleSystem.RespawnParticle(p);
+
+        p.isEmitter = true;
+        p.emitInterval = 0.01f; // Emette una scintilla ogni 0.01 secondi
+        p.emitTimer = 0.0f;
 
         particleSystem.RespawnParticle(p);
     }

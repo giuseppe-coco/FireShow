@@ -2,11 +2,11 @@
 
 #include "Shell.h"
 
-class PeonyShell : public Shell
+class ChrysanthemumShell : public Shell
 {
 public:
     // Il costruttore chiama semplicemente il costruttore della classe base.
-    PeonyShell(ParticleSystem &particleSystem, const Firework *f);
+    ChrysanthemumShell(ParticleSystem &particleSystem, const Firework *f);
 
     // 'override' è una parola chiave di C++11 che dice al compilatore
     // la nostra intenzione di sovrascrivere un metodo virtuale della classe base.
@@ -14,7 +14,7 @@ public:
     void explode() override;
 
 private:
-    // Ogni PeonyShell ha bisogno di conoscere i parametri della sua esplosione.
+    // Ogni ChrysanthemumShell ha bisogno di conoscere i parametri della sua esplosione.
     // Li memorizziamo qui.
     const Firework *f;
 };

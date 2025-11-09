@@ -47,18 +47,18 @@ void Editor::createHardcodedFireworks()
     chrysanthemumWhite.family = FireworkFamily::Chrysanthemum; // Cambia la famiglia
 
     // Proprietà particelle
-    chrysanthemumWhite.particleCount = 400; // Più denso
-    chrysanthemumWhite.minLifetime = 1.8f; // Vita più lunga per un effetto più persistente
-    chrysanthemumWhite.maxLifetime = 2.5f;
-    chrysanthemumWhite.minSpeed = 15.0f;
-    chrysanthemumWhite.maxSpeed = 25.0f;
-    chrysanthemumWhite.startColor = glm::vec3(1.0f, 1.0f, 0.8f); // Bianco-giallo brillante
-    chrysanthemumWhite.endColor = glm::vec3(0.5f, 0.5f, 0.5f);   // Grigio fumo
+    chrysanthemumWhite.particleCount = 300; // Più denso
+    chrysanthemumWhite.minLifetime = 1.0f; // Vita più lunga per un effetto più persistente
+    chrysanthemumWhite.maxLifetime = 1.5f;
+    chrysanthemumWhite.minSpeed = 18.0f;
+    chrysanthemumWhite.maxSpeed = 28.0f;
+    chrysanthemumWhite.startColor = glm::vec3(0.1f, 1.0f, 0.1f);
+    chrysanthemumWhite.endColor = glm::vec3(0.0f, 0.4f, 0.0f);   // Rosso scuro che svanisce
 
     // Proprietà lancio
     chrysanthemumWhite.startShellPosition = glm::vec3(10.0f, 0.0f, 0.0f); // Lancio leggermente spostato
-    chrysanthemumWhite.startShellVelocity = glm::vec3(0.0f, 20.0f, 0.0f); // Sale un po' più in alto
-    chrysanthemumWhite.fuseTime = 2.5f;
+    chrysanthemumWhite.startShellVelocity = glm::vec3(0.0f, 15.0f, 0.0f); // Sale un po' più in alto
+    chrysanthemumWhite.fuseTime = 2.0f;
 
     fireworksLibrary.push_back(chrysanthemumWhite);
 

@@ -64,6 +64,29 @@ void ParticleSystem::Update(float dt)
             
             // Facciamo sfumare la particella verso la trasparenza
             p.Color = glm::vec4(currentColor, p.Life * 2.0f); // Moltiplicato per 2 per un fade-out più veloce
+
+            if (p.isEmitter)
+            {
+                p.emitTimer += dt;
+                if (p.emitTimer >= p.emitInterval)
+                {
+                    // È ora di emettere una particella di scia!
+                    Particle trail;
+                    trail.Position = p.Position;
+                    // La velocità è quasi zero, per farla rimanere indietro
+                    trail.Velocity = p.Velocity * 0.1f + glm::ballRand(0.2f);
+                    trail.Life = 0.4f; // Vita molto breve
+                    trail.initialLife = 0.4f;
+                    trail.startColor = glm::vec3(1.0f, 1.0f, 0.8f); // Colore da scintilla
+                    trail.endColor = glm::vec3(0.3f, 0.3f, 0.3f);
+                    trail.isEmitter = false; // La particella di scia non è un emettitore
+
+                    // Trova uno slot libero e rianimalo
+                    RespawnParticle(trail);
+
+                    p.emitTimer = 0.0f; // Resetta il timer
+                }
+            }
         }
     }
 
