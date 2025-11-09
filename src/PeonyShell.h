@@ -6,7 +6,7 @@ class PeonyShell : public Shell
 {
 public:
     // Il costruttore chiama semplicemente il costruttore della classe base.
-    PeonyShell(ParticleSystem &particleSystem, const FireworkType *type);
+    PeonyShell(ParticleSystem &particleSystem, const Firework *type);
 
     // 'override' è una parola chiave di C++11 che dice al compilatore
     // la nostra intenzione di sovrascrivere un metodo virtuale della classe base.
@@ -16,5 +16,5 @@ public:
 private:
     // Ogni PeonyShell ha bisogno di conoscere i parametri della sua esplosione.
     // Li memorizziamo qui.
-    const FireworkType *type;
+    const Firework *type;
 };

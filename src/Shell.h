@@ -1,7 +1,10 @@
+// Shell.h
 #pragma once
 
 #include "ParticleSystem.h"
 #include "FireworkTypes.h"
+
+#include <memory>
 #include <glm/glm.hpp>
 
 // Enum per rappresentare lo stato corrente del proiettile
@@ -26,15 +29,13 @@ public:
     // Assicura che se si cancella un puntatore alla classe base che punta a un oggetto
     // della classe derivata, venga chiamato il distruttore corretto.
     virtual ~Shell() = default;
-    
+    static std::unique_ptr<Shell> createShell(const Firework* f, ParticleSystem &ps);
     void Launch(const FireworkEvent &event);
     void Update(float dt);
-
     ShellState GetState() const { return state; }
 
 protected:
     ParticleSystem &particleSystem; // Riferimento al sistema di particelle condiviso
-
     glm::vec3 position;
     glm::vec3 velocity;
     float fuse;       // Timer per l'esplosione

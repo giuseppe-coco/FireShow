@@ -1,5 +1,8 @@
 #include "Timeline.h"
+#include "Utils.h" 
 #include <GLFW/glfw3.h>
+#include <iostream>
+#include <algorithm>
 #include "../vendors/imgui/imgui.h"
 
 Timeline::Timeline()
@@ -44,7 +47,7 @@ void Timeline::DrawUI(
     const int timelineWidth,
     const int windowHeight,
     const int timelineHeight,
-    std::map<int, FireworkType> &lib)
+    std::vector<Firework> &lib)
 {
     // Imposta la posizione e la dimensione della prossima finestra di ImGui
     ImGui::SetNextWindowPos(ImVec2(0, windowHeight - timelineHeight)); // Posizione (0,0) in alto a sinistra dello schermo
@@ -76,37 +79,7 @@ void Timeline::DrawUI(
         Pause();
     ImGui::Separator();
 
-    // --- Logica per aggiungere un nuovo evento ---
-    // Dropdown per selezionare il tipo di fuoco da aggiungere
-    static int selectedFireworkId = 0; // static per mantenere la selezione tra i frame
-    if (ImGui::BeginCombo(
-            "Firework Type",
-            lib.count(selectedFireworkId) ? lib.at(selectedFireworkId).name.c_str() : "",
-            ImGuiComboFlags_WidthFitPreview)
-        )
-    {
-        for (const auto &pair : lib)
-        {
-            if (ImGui::Selectable(pair.second.name.c_str(), selectedFireworkId == pair.second.id))
-                selectedFireworkId = pair.second.id;
-        }
-        ImGui::EndCombo();
-    }
-    ImGui::SameLine();
-
-    // --- Gestione Eventi ---
-    if (ImGui::Button("Add Firework at Current Time"))
-    {
-        FireworkEvent newEvent;
-        newEvent.triggerTime = currentTime;
-        newEvent.fireworkTypeId = selectedFireworkId;
-        // Valori di default per il nuovo fuoco d'artificio
-        newEvent.startPosition = glm::vec3((rand() % 40) - 20, 0.0f, (rand() % 20) - 10);
-        newEvent.startVelocity = glm::vec3(0.0f, 10.0f + (rand() % 10), 0.0f);
-        newEvent.fuseTime = 2.0f + (rand() % 100) / 100.0f;
-        newEvent.id = nextEventId++;
-        events.push_back(newEvent);
-    }
+    mayAddEvent(lib);
 
     ImGui::Text("%d events on timeline", (int)events.size());
 
@@ -116,15 +89,68 @@ void Timeline::DrawUI(
         // ImGui::PushID/PopID è importante quando hai widget con la stessa etichetta in un loop.
         // Dà a ogni widget un ID unico.
         ImGui::PushID(events[i].id);
-        ImGui::Text("Event at %.2f s", events[i].triggerTime);
+        ImGui::Text("%s at %.2f s", events[i].fire.name.c_str(), events[i].triggerTime);
         ImGui::SameLine();
-        if (ImGui::Button("Delete"))
-        {
-            events.erase(events.begin() + i);
-            i--; // Decrementa l'indice perché il vettore si è accorciato
-        }
+        mayDelEvent(i);
         ImGui::PopID();
     }
-
     ImGui::End(); // Conclude la finestra
+}
+
+void Timeline::mayDelEvent(int i)
+{
+    if (ImGui::Button("Delete"))
+    {
+        events.erase(events.begin() + i);
+        i--; // Decrementa l'indice perché il vettore si è accorciato
+    }
+}
+
+void Timeline::mayAddEvent(std::vector<Firework>& lib)
+{
+    // Dropdown per selezionare il tipo di fuoco da aggiungere
+    static Firework* selectedFirework; // static per mantenere la selezione tra i frame
+    
+    // Se selectedFirework non è ancora stato impostato (è la prima volta o
+    // l'elemento che puntava è stato cancellato), lo impostiamo al primo
+    // elemento della libreria come default sicuro.
+    if (selectedFirework == nullptr)
+        selectedFirework = &lib[0];
+
+    auto it = std::find_if(
+        lib.begin(), lib.end(),
+        [&](const Firework &f)
+        { return selectedFirework && f.id == selectedFirework->id; }
+    );
+
+    if (ImGui::BeginCombo(
+            "Firework Type",
+            it != lib.end() ? (*it).name.c_str() : "",
+            ImGuiComboFlags_WidthFitPreview))
+    {
+        for (auto& elem : lib)
+        {
+            if (ImGui::Selectable(elem.name.c_str(), selectedFirework->id == elem.id))
+                selectedFirework = &elem;
+        }
+        ImGui::EndCombo();
+    }
+    ImGui::SameLine();
+    // --- Gestione Eventi ---
+    if (ImGui::Button("Add Firework at Current Time"))
+    {
+        FireworkEvent newEvent;
+        newEvent.triggerTime = currentTime;
+        newEvent.fire = *selectedFirework;
+        // Valori di default per il nuovo fuoco d'artificio
+        // newEvent.startPosition = glm::vec3( 
+        //                             sampleGaussian(0, 10),
+        //                             0.0f, 
+        //                             sampleGaussian(0, 2));
+
+        // newEvent.startVelocity = glm::vec3(0.0f, sampleGaussian(17, 2), 0.0f);
+        // newEvent.fuseTime = sampleGaussian(2.5, 0.5);
+        newEvent.id = nextEventId++;
+        events.push_back(newEvent);
+    }
 }

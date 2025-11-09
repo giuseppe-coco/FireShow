@@ -4,13 +4,85 @@
 #include <GLFW/glfw3.h>
 #include "../vendors/imgui/imgui.h"
 
-Editor::Editor() 
+Editor::Editor()
 {
-    // Creiamo un tipo di default
-    FireworkType defaultType;
-    defaultType.id = nextFireworkTypeId++;
-    defaultType.name = "Default Peony";
-    fireworksLibrary[defaultType.id] = defaultType;
+    createHardcodedFireworks();
+    // Imposta un default per selectedType, per evitare crash
+    if (!fireworksLibrary.empty())
+        selectedType = &fireworksLibrary[0];
+}
+
+void Editor::createHardcodedFireworks()
+{
+    // --- 1. PEONIA ROSSA CLASSICA ---
+    Firework peonyRed;
+    peonyRed.id = nextFireworkTypeId++;
+    peonyRed.name = "Classic Red Peony";
+    peonyRed.family = FireworkFamily::Peony;
+
+    // Proprietà particelle
+    peonyRed.particleCount = 300;
+    peonyRed.minLifetime = 1.0f;
+    peonyRed.maxLifetime = 1.5f;
+    peonyRed.minSpeed = 18.0f;
+    peonyRed.maxSpeed = 28.0f;
+    peonyRed.startColor = glm::vec3(1.0f, 0.1f, 0.1f); // Rosso vivo
+    peonyRed.endColor = glm::vec3(0.4f, 0.0f, 0.0f);   // Rosso scuro che svanisce
+
+    // Proprietà lancio (valori di default)
+    peonyRed.startShellPosition = glm::vec3(0.0f, 0.0f, 0.0f);
+    peonyRed.startShellVelocity = glm::vec3(0.0f, 15.0f, 0.0f);
+    peonyRed.fuseTime = 2.0f;
+    
+    fireworksLibrary.push_back(peonyRed);
+
+    // --- 2. CRISANTEMO BIANCO SCINTILLANTE ---
+    // Nota: La simulazione visiva del Crisantemo richiede che le particelle
+    // generino altre particelle (sub-emitters). Poiché non abbiamo ancora questa
+    // logica, lo simuleremo con più particelle, una vita più lunga e un colore
+    // che ricorda le scintille. Sarà visivamente un "fratello maggiore" della Peonia.
+    Firework chrysanthemumWhite;
+    chrysanthemumWhite.id = nextFireworkTypeId++;
+    chrysanthemumWhite.name = "Sparkling White Chrysanthemum";
+    chrysanthemumWhite.family = FireworkFamily::Chrysanthemum; // Cambia la famiglia
+
+    // Proprietà particelle
+    chrysanthemumWhite.particleCount = 400; // Più denso
+    chrysanthemumWhite.minLifetime = 1.8f; // Vita più lunga per un effetto più persistente
+    chrysanthemumWhite.maxLifetime = 2.5f;
+    chrysanthemumWhite.minSpeed = 15.0f;
+    chrysanthemumWhite.maxSpeed = 25.0f;
+    chrysanthemumWhite.startColor = glm::vec3(1.0f, 1.0f, 0.8f); // Bianco-giallo brillante
+    chrysanthemumWhite.endColor = glm::vec3(0.5f, 0.5f, 0.5f);   // Grigio fumo
+
+    // Proprietà lancio
+    chrysanthemumWhite.startShellPosition = glm::vec3(10.0f, 0.0f, 0.0f); // Lancio leggermente spostato
+    chrysanthemumWhite.startShellVelocity = glm::vec3(0.0f, 20.0f, 0.0f); // Sale un po' più in alto
+    chrysanthemumWhite.fuseTime = 2.5f;
+
+    fireworksLibrary.push_back(chrysanthemumWhite);
+
+    // --- 3. PEONIA BLU VELOCE ---
+    Firework peonyBlue;
+    peonyBlue.id = nextFireworkTypeId++;
+    peonyBlue.name = "Fast Blue Peony";
+    peonyBlue.family = FireworkFamily::Peony;
+
+    // Proprietà particelle
+    peonyBlue.particleCount = 200; // Esplosione più piccola
+    peonyBlue.minLifetime = 0.8f;
+    peonyBlue.maxLifetime = 1.2f;
+    peonyBlue.minSpeed = 30.0f; // Molto più veloce!
+    peonyBlue.maxSpeed = 40.0f;
+    peonyBlue.startColor = glm::vec3(0.2f, 0.2f, 1.0f); // Blu
+    peonyBlue.endColor = glm::vec3(0.0f, 0.0f, 0.3f);   // Blu scuro
+
+    // Proprietà lancio
+    peonyBlue.startShellPosition = glm::vec3(-30.0f, 0.0f, 0.0f);
+    peonyBlue.startShellVelocity = glm::vec3(0.0f, 15.0f, 0.0f);
+    peonyBlue.fuseTime = 2.0f;
+
+    fireworksLibrary.push_back(peonyBlue);
 }
 
 void Editor::DrawUI(
@@ -25,22 +97,20 @@ void Editor::DrawUI(
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
 
     ImGui::Begin("Firework Editor", nullptr, window_flags);
-    // --- Lista dei tipi di fuochi (la nostra fireworksLibraryreria) ---
     if (ImGui::Button("Add New Type"))
     {
-        FireworkType newType;
+        Firework newType;
         newType.id = nextFireworkTypeId++;
         newType.name = "New Firework " + std::to_string(newType.id);
-        fireworksLibrary[newType.id] = newType;
-        selectedType = &fireworksLibrary[newType.id]; // Seleziona il nuovo tipo
+        fireworksLibrary.push_back(newType);
     }
     ImGui::Separator();
     ImGui::Text("Library:");
-    for (auto &pair : fireworksLibrary)
+    for (auto& elem : fireworksLibrary)
     {
         // Seleziona un tipo dalla lista
-        if (ImGui::Selectable(pair.second.name.c_str(), selectedType && selectedType->id == pair.second.id))
-            selectedType = &pair.second;
+        if (ImGui::Selectable(elem.name.c_str()))
+            selectedType = &elem;
     }
     ImGui::Separator();
     // --- Editor delle proprietà del tipo selezionato ---
@@ -53,11 +123,10 @@ void Editor::DrawUI(
             selectedType->name = nameBuffer;
 
         ImGui::DragInt("Particle Count", &selectedType->particleCount, 10, 10, 10000);
-        ImGui::DragFloatRange2("Lifetime", &selectedType->minLifetime, &selectedType->maxLifetime, 0.1f, 0.1f, 10.0f);
-        ImGui::DragFloatRange2("Speed", &selectedType->minSpeed, &selectedType->maxSpeed, 0.5f, 0.0f, 100.0f);
-        ImGui::ColorEdit3("Start Color", (float *)&selectedType->startColor);
-        ImGui::ColorEdit3("End Color", (float *)&selectedType->endColor);
-        // ImGui::SliderFloat("Gravity Modifier", &selectedType->gravityModifier, 0.0f, 2.0f);
+        ImGui::InputFloat("Start Shell Position", &selectedType->startShellPosition.x, 1.0f, 100.0f, "%.1f");
+        ImGui::InputFloat("Start Shell velocity", &selectedType->startShellVelocity.y, 1.0f, 100.0f, "%.1f");
+        ImGui::ColorEdit3("Start Color Particle", (float *)&selectedType->startColor);
+        ImGui::ColorEdit3("End Color Particle", (float *)&selectedType->endColor);
     }
     ImGui::End();
 }

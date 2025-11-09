@@ -17,7 +17,7 @@ public:
     // La timeline non sa nulla di "Shell", sa solo di "FireworkEvent".
     std::vector<const FireworkEvent *> Update(float dt);
 
-    void DrawUI(int windowWidth, int windowHeight, const int timelineHeight, std::map<int, FireworkType>& lib);
+    void DrawUI(int windowWidth, int windowHeight, const int timelineHeight, std::vector<Firework>& lib);
 
     void Play();
     void Pause();
@@ -31,4 +31,7 @@ private:
     // L'elenco di tutti gli eventi programmati
     std::vector<FireworkEvent> events;
     int nextEventId; // Per generare ID unici
+
+    void mayAddEvent(std::vector<Firework>& lib);
+    void mayDelEvent(int idx);
 };

@@ -1,15 +1,19 @@
 #include "Shell.h"
 #include "FireworkTypes.h"
+#include "PeonyShell.h"
+
 #include <glm/gtc/random.hpp>
+#include <memory>
+#include <iostream>
 
 Shell::Shell(ParticleSystem &ps)
     : particleSystem(ps), state(ShellState::INACTIVE) {}
 
 void Shell::Launch(const FireworkEvent &event)
 {
-    this->position = event.startPosition;
-    this->velocity = event.startVelocity;
-    this->fuse = event.fuseTime;
+    this->position = event.fire.startShellPosition;
+    this->velocity = event.fire.startShellVelocity;
+    this->fuse = event.fire.fuseTime;
     this->trailTimer = 0.0f; // resetta il timer della scia
     this->state = ShellState::RISING;
 }
@@ -63,8 +67,21 @@ void Shell::emitTrailParticle()
     trailParticle.startColor = glm::vec3(1.0f, 0.8f, 0.5f);
     trailParticle.endColor = glm::vec3(0.2f, 0.2f, 0.2f);
 
-    // La scia dovrebbe essere influenzata dalla gravità normale
-    trailParticle.gravityModifier = 1.0f; // <<-- IMPORTANTE: Dagli un valore sensato!
-
     particleSystem.RespawnParticle(trailParticle);
+}
+
+std::unique_ptr<Shell> Shell::createShell(const Firework* f, ParticleSystem &ps)
+{
+    switch (f->family)
+    {
+    case FireworkFamily::Peony:
+        return std::make_unique<PeonyShell>(ps, f);
+    // case FireworkFamily::Chrysanthemum:
+    //     return std::make_unique<ChrysanthemumShell>(ps, type);
+    // case FireworkFamily::Willow:
+    //     return std::make_unique<WillowShell>(ps, type);
+    default:
+        // Ritorna un tipo di default o nullptr se il tipo non è riconosciuto
+        return std::make_unique<PeonyShell>(ps, f);
+    }
 }

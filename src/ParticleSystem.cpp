@@ -54,7 +54,7 @@ void ParticleSystem::Update(float dt)
             // La particella è viva, aggiorna la sua posizione
             p.Position += p.Velocity * dt;
             // Applichiamo una semplice gravità
-            p.Velocity.y -= 9.81f * p.gravityModifier * dt;
+            p.Velocity.y -= 9.81f * dt;
 
             // Calcola il progresso della vita (da 1.0 a 0.0)
             float lifeProgress = p.Life / p.initialLife;

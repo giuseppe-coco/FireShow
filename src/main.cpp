@@ -10,7 +10,6 @@
 
 #include <iostream>
 #include <vector>
-#include <map>
 #include <windows.h>
 #include <memory> // Per std::unique_ptr
 
@@ -21,7 +20,6 @@
 #include "FireworkTypes.h"
 #include "Editor.h"
 #include "Shell.h"
-#include "PeonyShell.h"
 
 // --- Impostazioni ---
 #define SETTINGS_HEIGHT 270
@@ -78,7 +76,7 @@ int main()
     // --- Creazione risorse ---
     Timeline timeline;
     Editor editor;
-    std::map<int, FireworkType> &lib = editor.getFireworksLibrary();
+    std::vector<Firework> &lib = editor.getFireworksLibrary();
     Shader groundShader("shaders/ground.vert", "shaders/ground.frag");
     Shader particleShader("shaders/particle.vert", "shaders/particle.frag");
 
@@ -88,12 +86,7 @@ int main()
     // Creiamo un "pool" di proiettili. Invece di creare e distruggere oggetti, li riutilizziamo. Questo è molto più efficiente.
     // std::unique_ptr gestisce automaticamente la memoria, prevenendo memory leak.
     const int MAX_SHELLS = 20;
-    std::vector<std::unique_ptr<Shell>> shellPool;
-    // Per ora, popoliamo il pool solo con Peonie, usando il tipo di default
-    for (int i = 0; i < MAX_SHELLS; ++i)
-    {
-        shellPool.push_back(std::make_unique<PeonyShell>(particleSystem, &lib[0]));
-    }
+    std::vector<std::unique_ptr<Shell>> shellPool(MAX_SHELLS);
 
     float groundVertices[] = {
         // positions          // texture Coords
@@ -124,7 +117,7 @@ int main()
 
     // --- Render Loop ---
     while (!glfwWindowShouldClose(window))
-    {
+    {        
         // --- Calcolo DeltaTime ---
         // Questo è FONDAMENTALE per avere una fisica indipendente dal framerate.
         // `deltaTime` conterrà il tempo esatto (in secondi) trascorso dall'ultimo frame.
@@ -142,10 +135,10 @@ int main()
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
+        // ImGui::ShowMetricsWindow();
 
         timeline.DrawUI(windowWidth / 2.0f, windowHeight, SETTINGS_HEIGHT, lib);
         editor.DrawUI(windowWidth / 2.0, windowHeight, SETTINGS_HEIGHT);
-
 
         // --- Input ---
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -157,25 +150,31 @@ int main()
         {
             for (const auto *eventData : eventsToTrigger)
             {
-                if (lib.count(eventData->fireworkTypeId))
+                // Cerca un proiettile inattivo e lancialo con i dati dell'evento
+                for (auto &shellPtr : shellPool)
                 {
-                    const FireworkType *typeToLaunch = &lib.at(eventData->fireworkTypeId);
-                    // Cerca un proiettile inattivo e lancialo con i dati dell'evento
-                    for (auto &shellPtr : shellPool )
+                    if (!shellPtr) // Se il puntatore è nullo, lo slot è libero
                     {
-                        if (shellPtr->GetState() == ShellState::INACTIVE)
-                        {
-                            shellPtr->Launch(*eventData);
-                            break; // Lancia solo un proiettile per evento e passa al prossimo
-                        }
+                        // Usa la factory per creare la shell corretta
+                        shellPtr = Shell::createShell(&eventData->fire, particleSystem);
+                        shellPtr->Launch(*eventData);
+                        break;
                     }
                 }
             }
         }
 
         // Aggiorna tutti i proiettili attivi
-        for (auto &shell : shellPool)
-            shell->Update(deltaTime);
+        for (auto &shellPtr : shellPool)
+        {
+            if (shellPtr) // Assicurati che il puntatore non sia nullo
+            {
+                shellPtr->Update(deltaTime);
+                // Se la shell ha finito, resetta il puntatore per liberare lo slot
+                if (shellPtr->GetState() == ShellState::INACTIVE)
+                    shellPtr.reset(); // Questo distrugge l'oggetto e imposta il ptr a nullptr
+            }
+        }
 
         // Aggiorna la fisica di tutte le particelle
         particleSystem.Update(deltaTime);
