@@ -26,13 +26,11 @@ void ChrysanthemumShell::explode()
         p.endColor = f->endColor;
         p.Life = sampleGaussian((f->minLifetime + f->maxLifetime) / 2.0, (f->minLifetime - f->maxLifetime) / 6.0);
         p.initialLife = p.Life; // Salva la vita iniziale per l'interpolazione
-
-        particleSystem.RespawnParticle(p);
-
         p.isEmitter = true;
-        p.emitInterval = 0.01f; // Emette una scintilla ogni 0.01 secondi
+        p.emitInterval = 0.02f; // Emette una scintilla ogni 0.02 secondi
         p.emitTimer = 0.0f;
-
+        p.subLife = 0.4;
+        
         particleSystem.RespawnParticle(p);
     }
 }

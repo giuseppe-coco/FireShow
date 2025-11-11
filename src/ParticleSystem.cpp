@@ -54,7 +54,7 @@ void ParticleSystem::Update(float dt)
             // La particella è viva, aggiorna la sua posizione
             p.Position += p.Velocity * dt;
             // Applichiamo una semplice gravità
-            p.Velocity.y -= 9.81f * dt;
+            p.Velocity.y -= 9.81f * p.gravityModifier * dt;
 
             // Calcola il progresso della vita (da 1.0 a 0.0)
             float lifeProgress = p.Life / p.initialLife;
@@ -75,15 +75,14 @@ void ParticleSystem::Update(float dt)
                     trail.Position = p.Position;
                     // La velocità è quasi zero, per farla rimanere indietro
                     trail.Velocity = p.Velocity * 0.1f + glm::ballRand(0.2f);
-                    trail.Life = 0.4f; // Vita molto breve
-                    trail.initialLife = 0.4f;
+                    trail.Life = p.subLife;
+                    trail.initialLife =  trail.Life;
                     trail.startColor = glm::vec3(1.0f, 1.0f, 0.8f); // Colore da scintilla
                     trail.endColor = glm::vec3(0.3f, 0.3f, 0.3f);
                     trail.isEmitter = false; // La particella di scia non è un emettitore
 
-                    // Trova uno slot libero e rianimalo
-                    RespawnParticle(trail);
 
+                    RespawnParticle(trail);
                     p.emitTimer = 0.0f; // Resetta il timer
                 }
             }

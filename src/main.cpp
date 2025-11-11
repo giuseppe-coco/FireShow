@@ -10,16 +10,14 @@
 
 #include <iostream>
 #include <vector>
-#include <windows.h>
-#include <memory> // Per std::unique_ptr
+#include <memory> // Per std::unique_ptr 
 
 #include "Shader.h"
 #include "ParticleSystem.h"
-#include "Shell.h"
+#include "shell/Shell.h"
 #include "Timeline.h"
 #include "FireworkTypes.h"
 #include "Editor.h"
-#include "Shell.h"
 
 // --- Impostazioni ---
 #define SETTINGS_HEIGHT 270
@@ -66,7 +64,7 @@ int main()
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO &io = ImGui::GetIO();
-    (void)io;
+    (void)io; 
     // io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Abilita controllo da tastiera
     ImGui::StyleColorsDark(); // Scegli lo stile
     // Inizializza i backend
@@ -147,7 +145,7 @@ int main()
         // Aggiorna la timeline e ottieni gli eventi da eseguire
         auto eventsToTrigger = timeline.Update(deltaTime);
         if (!eventsToTrigger.empty())
-        {
+        { 
             for (const auto *eventData : eventsToTrigger)
             {
                 // Cerca un proiettile inattivo e lancialo con i dati dell'evento
@@ -158,11 +156,11 @@ int main()
                         // Usa la factory per creare la shell corretta
                         shellPtr = Shell::createShell(&eventData->fire, particleSystem);
                         shellPtr->Launch(*eventData);
-                        break;
+                        break;  
                     }
                 }
             }
-        }
+        } 
 
         // Aggiorna tutti i proiettili attivi
         for (auto &shellPtr : shellPool)

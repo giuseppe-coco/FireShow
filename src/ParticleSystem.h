@@ -12,21 +12,24 @@ struct Particle
     glm::vec3 Velocity;
     glm::vec4 Color;
     float Life;
-    
+    float initialLife;
+    float gravityModifier;
     glm::vec3 startColor;
     glm::vec3 endColor;
-    float initialLife;
 
     bool isEmitter;     // Questa particella genera altre particelle?
     float emitInterval; // Ogni quanti secondi emette (es. 0.01s)
     float emitTimer;    // Timer interno per tracciare il tempo dall'ultima emissione
+    float subLife;
 
-    Particle() : Position(0.0f), Velocity(0.0f), Color(1.0f), Life(0.0f), isEmitter(false) {}
+    Particle() : Position(0.0f), Velocity(0.0f), Color(1.0f), Life(0.0f), gravityModifier(1.0), isEmitter(false) {}
 };
 
 class ParticleSystem
 {
 public:
+    Shader &shader;
+
     ParticleSystem(Shader &shader, unsigned int amount);
     void Update(float dt); // Gestisce solo la fisica delle particelle VIVE
     void Draw();
@@ -36,7 +39,6 @@ public:
     void RespawnParticle(Particle &particleProperties);
 
 private:
-    Shader &shader;
     unsigned int amount;
     std::vector<Particle> particles;
     unsigned int VAO, VBO;

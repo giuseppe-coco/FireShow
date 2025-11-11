@@ -11,7 +11,6 @@
 enum class ShellState
 {
     RISING,   // Sta salendo
-    EXPLODED, // È esploso
     INACTIVE  // È spento e pronto per essere riutilizzato
 };
 

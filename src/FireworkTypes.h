@@ -8,7 +8,8 @@ enum class FireworkFamily
 {
     Peony,
     Chrysanthemum,
-    Willow
+    Willow,
+    Volcano
 };
 
 // Definisce le proprietà di un'esplosione di fuochi d'artificio.
@@ -27,6 +28,7 @@ struct Firework
     float maxSpeed = 25.0;
     glm::vec3 startColor = glm::vec3(1.0f, 0.5f, 0.2f); // Arancione
     glm::vec3 endColor = glm::vec3(0.5f, 0.0f, 0.0f);   // Rosso scuro
+    float gravityModifier = 1.0;
 
     // --- Shell's properties ---
     glm::vec3 startShellPosition;

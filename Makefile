@@ -19,7 +19,7 @@ TARGET = $(BIN_DIR)/FireworksSimulator.exe
 # --- File Sorgente e Oggetti ---
 
 # Elenco di tutte le directory contenenti file sorgente .cpp
-SRC_DIRS = src libs/glad/src vendors/imgui vendors/imgui/backends
+SRC_DIRS = src src/shell libs/glad/src vendors/imgui vendors/imgui/backends
 
 # Trova tutti i file .cpp in quelle directory
 # La funzione wildcard cerca i file, la funzione notdir rimuove il percorso

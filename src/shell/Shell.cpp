@@ -6,6 +6,7 @@
 #include <glm/gtc/random.hpp>
 #include <memory>
 #include <iostream>
+#include "WillowShell.h"
 
 Shell::Shell(ParticleSystem &ps)
     : particleSystem(ps), state(ShellState::INACTIVE) {}
@@ -21,7 +22,6 @@ void Shell::Launch(const FireworkEvent &event)
 
 void Shell::Update(float dt)
 {
-    // Se il proiettile non è attivo, non fare nulla.
     if (state == ShellState::INACTIVE)
         return;
 
@@ -29,9 +29,8 @@ void Shell::Update(float dt)
     if (state == ShellState::RISING)
     {
         fuse -= dt; // Consuma la miccia
-
         position += velocity * dt;
-        velocity.y -= 9.81f * 0.5f * dt;
+        velocity.y -= 9.81f * 1.0 * dt; // TODO: check gravity value
 
         // Logica per emettere la scia di particelle
         trailTimer += dt;
@@ -61,8 +60,8 @@ void Shell::emitTrailParticle()
     trailParticle.Velocity = -this->velocity * 0.1f + glm::ballRand(0.5f);
     trailParticle.Color = glm::vec4(1.0f, 0.8f, 0.5f, 1.0f); // Colore da scintilla
     trailParticle.Life = 0.5f;                               // Vita breve per la scia
-    trailParticle.initialLife = 0.5f;
-    
+    trailParticle.initialLife = trailParticle.Life;
+
     // Colori per la scia (es. da arancione brillante a grigio fumo scuro)
     trailParticle.startColor = glm::vec3(1.0f, 0.8f, 0.5f);
     trailParticle.endColor = glm::vec3(0.2f, 0.2f, 0.2f);
@@ -78,8 +77,12 @@ std::unique_ptr<Shell> Shell::createShell(const Firework* f, ParticleSystem &ps)
         return std::make_unique<PeonyShell>(ps, f);
     case FireworkFamily::Chrysanthemum:
         return std::make_unique<ChrysanthemumShell>(ps, f);
-    // case FireworkFamily::Willow:
-    //     return std::make_unique<WillowShell>(ps, f);
+    case FireworkFamily::Willow: { // separated scope
+        Shader willowShader("shaders/particle.vert", "shaders/particle.frag");
+        willowShader.setInt("isWillow", 1);
+        ps.shader = willowShader;
+        return std::make_unique<WillowShell>(ps, f);
+    }
     default:
         // Ritorna un tipo di default o nullptr se il tipo non è riconosciuto
         return std::make_unique<PeonyShell>(ps, f);

@@ -21,7 +21,7 @@ void Editor::createHardcodedFireworks()
     peonyRed.family = FireworkFamily::Peony;
 
     // Proprietà particelle
-    peonyRed.particleCount = 300;
+    peonyRed.particleCount = 50;
     peonyRed.minLifetime = 1.0f;
     peonyRed.maxLifetime = 1.5f;
     peonyRed.minSpeed = 18.0f;
@@ -31,7 +31,7 @@ void Editor::createHardcodedFireworks()
 
     // Proprietà lancio (valori di default)
     peonyRed.startShellPosition = glm::vec3(0.0f, 0.0f, 0.0f);
-    peonyRed.startShellVelocity = glm::vec3(0.0f, 15.0f, 0.0f);
+    peonyRed.startShellVelocity = glm::vec3(0.0f, 20.0f, 0.0f);
     peonyRed.fuseTime = 2.0f;
     
     fireworksLibrary.push_back(peonyRed);
@@ -47,7 +47,7 @@ void Editor::createHardcodedFireworks()
     chrysanthemumWhite.family = FireworkFamily::Chrysanthemum; // Cambia la famiglia
 
     // Proprietà particelle
-    chrysanthemumWhite.particleCount = 300; // Più denso
+    chrysanthemumWhite.particleCount = 50; // Più denso
     chrysanthemumWhite.minLifetime = 1.0f; // Vita più lunga per un effetto più persistente
     chrysanthemumWhite.maxLifetime = 1.5f;
     chrysanthemumWhite.minSpeed = 18.0f;
@@ -57,32 +57,53 @@ void Editor::createHardcodedFireworks()
 
     // Proprietà lancio
     chrysanthemumWhite.startShellPosition = glm::vec3(10.0f, 0.0f, 0.0f); // Lancio leggermente spostato
-    chrysanthemumWhite.startShellVelocity = glm::vec3(0.0f, 15.0f, 0.0f); // Sale un po' più in alto
+    chrysanthemumWhite.startShellVelocity = glm::vec3(0.0f, 20.0f, 0.0f); // Sale un po' più in alto
     chrysanthemumWhite.fuseTime = 2.0f;
 
     fireworksLibrary.push_back(chrysanthemumWhite);
 
-    // --- 3. PEONIA BLU VELOCE ---
-    Firework peonyBlue;
-    peonyBlue.id = nextFireworkTypeId++;
-    peonyBlue.name = "Fast Blue Peony";
-    peonyBlue.family = FireworkFamily::Peony;
+    Firework willow;
+    willow.id = nextFireworkTypeId++;
+    willow.name = "Willow";
+    willow.family = FireworkFamily::Willow;
 
     // Proprietà particelle
-    peonyBlue.particleCount = 200; // Esplosione più piccola
-    peonyBlue.minLifetime = 0.8f;
-    peonyBlue.maxLifetime = 1.2f;
-    peonyBlue.minSpeed = 30.0f; // Molto più veloce!
-    peonyBlue.maxSpeed = 40.0f;
-    peonyBlue.startColor = glm::vec3(0.2f, 0.2f, 1.0f); // Blu
-    peonyBlue.endColor = glm::vec3(0.0f, 0.0f, 0.3f);   // Blu scuro
+    willow.particleCount = 200;
+    willow.minLifetime = 2.0f;
+    willow.maxLifetime = 2.0f;
+    willow.minSpeed = 10.0f;
+    willow.maxSpeed = 12.0f;
+    willow.startColor = glm::vec3(0.9f, 0.743f, 0.0f); // Dorato chiaro
+    willow.endColor = glm::vec3(1.0f, 0.843f, 0.0f); // Dorato scuro
 
     // Proprietà lancio
-    peonyBlue.startShellPosition = glm::vec3(-30.0f, 0.0f, 0.0f);
-    peonyBlue.startShellVelocity = glm::vec3(0.0f, 15.0f, 0.0f);
-    peonyBlue.fuseTime = 2.0f;
+    willow.startShellPosition = glm::vec3(-30.0f, 0.0f, 0.0f);
+    willow.startShellVelocity = glm::vec3(0.0f, 20.0f, 0.0f);
+    willow.fuseTime = 2.0f;
 
-    fireworksLibrary.push_back(peonyBlue);
+    fireworksLibrary.push_back(willow);
+
+    // --- Volcano ---
+    Firework volcano;
+    volcano.id = nextFireworkTypeId++;
+    volcano.name = "Volcano";
+    volcano.family = FireworkFamily::Volcano;
+
+    // Proprietà particelle
+    volcano.particleCount = 200;
+    volcano.minLifetime = 2.0f;
+    volcano.maxLifetime = 2.0f;
+    volcano.minSpeed = 10.0f;
+    volcano.maxSpeed = 12.0f;
+    volcano.startColor = glm::vec3(0.9f, 0.743f, 0.0f); // Dorato chiaro
+    volcano.endColor = glm::vec3(1.0f, 0.843f, 0.0f);   // Dorato scuro
+
+    // Proprietà lancio
+    volcano.startShellPosition = glm::vec3(-30.0f, 0.0f, 0.0f);
+    volcano.startShellVelocity = glm::vec3(0.0f, 20.0f, 0.0f);
+    volcano.fuseTime = 2.0f;
+
+    fireworksLibrary.push_back(volcano);
 }
 
 void Editor::DrawUI(
