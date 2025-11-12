@@ -1,5 +1,7 @@
 #include "Timeline.h"
-#include "Utils.h" 
+#include "Utils.h"
+#include "firework/Firework.h"
+
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <algorithm>
@@ -47,7 +49,7 @@ void Timeline::DrawUI(
     const int timelineWidth,
     const int windowHeight,
     const int timelineHeight,
-    std::vector<Firework> &lib)
+    std::vector<std::unique_ptr<Firework>> &lib)
 {
     // Imposta la posizione e la dimensione della prossima finestra di ImGui
     ImGui::SetNextWindowPos(ImVec2(0, windowHeight - timelineHeight)); // Posizione (0,0) in alto a sinistra dello schermo
@@ -89,7 +91,7 @@ void Timeline::DrawUI(
         // ImGui::PushID/PopID è importante quando hai widget con la stessa etichetta in un loop.
         // Dà a ogni widget un ID unico.
         ImGui::PushID(events[i].id);
-        ImGui::Text("%s at %.2f s", events[i].fire.name.c_str(), events[i].triggerTime);
+        ImGui::Text("%s at %.2f s", events[i].fire->name.c_str(), events[i].triggerTime);
         ImGui::SameLine();
         mayDelEvent(i);
         ImGui::PopID();
@@ -106,7 +108,7 @@ void Timeline::mayDelEvent(int i)
     }
 }
 
-void Timeline::mayAddEvent(std::vector<Firework>& lib)
+void Timeline::mayAddEvent(std::vector<std::unique_ptr<Firework>> &lib) 
 {
     // Dropdown per selezionare il tipo di fuoco da aggiungere
     static Firework* selectedFirework; // static per mantenere la selezione tra i frame
@@ -115,23 +117,23 @@ void Timeline::mayAddEvent(std::vector<Firework>& lib)
     // l'elemento che puntava è stato cancellato), lo impostiamo al primo
     // elemento della libreria come default sicuro.
     if (selectedFirework == nullptr)
-        selectedFirework = &lib[0];
+        selectedFirework = lib[0].get();
 
     auto it = std::find_if(
         lib.begin(), lib.end(),
-        [&](const Firework &f)
-        { return selectedFirework && f.id == selectedFirework->id; }
+        [&](const std::unique_ptr<Firework>& p)
+        { return selectedFirework && p.get()->id == selectedFirework->id; }
     );
 
     if (ImGui::BeginCombo(
             "Firework Type",
-            it != lib.end() ? (*it).name.c_str() : "",
+            it != lib.end() ? (*it)->name.c_str() : "",
             ImGuiComboFlags_WidthFitPreview))
     {
         for (auto& elem : lib)
         {
-            if (ImGui::Selectable(elem.name.c_str(), selectedFirework->id == elem.id))
-                selectedFirework = &elem;
+            if (ImGui::Selectable(elem->name.c_str(), selectedFirework->id == elem->id))
+                selectedFirework = elem.get();
         }
         ImGui::EndCombo();
     }
@@ -141,7 +143,7 @@ void Timeline::mayAddEvent(std::vector<Firework>& lib)
     {
         FireworkEvent newEvent;
         newEvent.triggerTime = currentTime;
-        newEvent.fire = *selectedFirework;
+        newEvent.fire = selectedFirework;
         // Valori di default per il nuovo fuoco d'artificio
         // newEvent.startPosition = glm::vec3( 
         //                             sampleGaussian(0, 10),

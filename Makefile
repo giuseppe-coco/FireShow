@@ -19,7 +19,7 @@ TARGET = $(BIN_DIR)/FireworksSimulator.exe
 # --- File Sorgente e Oggetti ---
 
 # Elenco di tutte le directory contenenti file sorgente .cpp
-SRC_DIRS = src src/shell libs/glad/src vendors/imgui vendors/imgui/backends
+SRC_DIRS = src src/firework libs/glad/src vendors/imgui vendors/imgui/backends
 
 # Trova tutti i file .cpp in quelle directory
 # La funzione wildcard cerca i file, la funzione notdir rimuove il percorso
@@ -68,6 +68,11 @@ $(OBJ_DIR)/%.o: src/%.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
 # Regole simili per le altre directory dei sorgenti
+$(OBJ_DIR)/%.o: src/firework/%.cpp
+	@mkdir -p $(OBJ_DIR) # Assicurati che la directory esista
+	@echo "Compiling $<..."
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
+
 $(OBJ_DIR)/%.o: libs/glad/src/%.c
 	@mkdir -p $(OBJ_DIR)
 	@echo "Compiling $<..."

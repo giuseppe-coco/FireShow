@@ -1,26 +1,26 @@
-#include "Shell.h"
-#include "FireworkTypes.h"
-#include "PeonyShell.h"
-#include "ChrysanthemumShell.h"
+#include "Firework.h"
+#include "Types.h"
+#include "Peony.h"
+#include "Chrysanthemum.h"
+#include "Willow.h"
 
 #include <glm/gtc/random.hpp>
 #include <memory>
 #include <iostream>
-#include "WillowShell.h"
 
-Shell::Shell(ParticleSystem &ps)
+Firework::Firework(ParticleSystem &ps)
     : particleSystem(ps), state(ShellState::INACTIVE) {}
 
-void Shell::Launch(const FireworkEvent &event)
+void Firework::Launch(const FireworkEvent &event)
 {
-    this->position = event.fire.startShellPosition;
-    this->velocity = event.fire.startShellVelocity;
-    this->fuse = event.fire.fuseTime;
+    this->position = event.fire->position;
+    this->velocity = event.fire->velocity;
+    this->fuse = event.fire->fuse;
     this->trailTimer = 0.0f; // resetta il timer della scia
     this->state = ShellState::RISING;
 }
 
-void Shell::Update(float dt)
+void Firework::Update(float dt)
 {
     if (state == ShellState::INACTIVE)
         return;
@@ -51,7 +51,7 @@ void Shell::Update(float dt)
 
 // Chiediamo al sistema di particelle di "rianimare" una delle sue particelle morte
 // e di trasformarla in una particella di scia.
-void Shell::emitTrailParticle()
+void Firework::emitTrailParticle()
 {
     // Parametri per la particella di scia
     Particle trailParticle;
@@ -67,24 +67,4 @@ void Shell::emitTrailParticle()
     trailParticle.endColor = glm::vec3(0.2f, 0.2f, 0.2f);
 
     particleSystem.RespawnParticle(trailParticle);
-}
-
-std::unique_ptr<Shell> Shell::createShell(const Firework* f, ParticleSystem &ps)
-{
-    switch (f->family)
-    {
-    case FireworkFamily::Peony:
-        return std::make_unique<PeonyShell>(ps, f);
-    case FireworkFamily::Chrysanthemum:
-        return std::make_unique<ChrysanthemumShell>(ps, f);
-    case FireworkFamily::Willow: { // separated scope
-        Shader willowShader("shaders/particle.vert", "shaders/particle.frag");
-        willowShader.setInt("isWillow", 1);
-        ps.shader = willowShader;
-        return std::make_unique<WillowShell>(ps, f);
-    }
-    default:
-        // Ritorna un tipo di default o nullptr se il tipo non è riconosciuto
-        return std::make_unique<PeonyShell>(ps, f);
-    }
 }

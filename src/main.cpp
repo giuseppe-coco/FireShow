@@ -14,9 +14,9 @@
 
 #include "Shader.h"
 #include "ParticleSystem.h"
-#include "shell/Shell.h"
+#include "firework/Firework.h"
 #include "Timeline.h"
-#include "FireworkTypes.h"
+#include "Types.h"
 #include "Editor.h"
 
 // --- Impostazioni ---
@@ -73,18 +73,18 @@ int main()
 
     // --- Creazione risorse ---
     Timeline timeline;
-    Editor editor;
-    std::vector<Firework> &lib = editor.getFireworksLibrary();
     Shader groundShader("shaders/ground.vert", "shaders/ground.frag");
     Shader particleShader("shaders/particle.vert", "shaders/particle.frag");
-
     ParticleSystem particleSystem(particleShader, 10000); // Creiamo un sistema con 10000 particelle
+    Editor editor(particleSystem);
+    std::vector<std::unique_ptr<Firework>> &lib = editor.getFireworksLibrary();
+    
 
     // --- POOL DI PROIETTILI ---
     // Creiamo un "pool" di proiettili. Invece di creare e distruggere oggetti, li riutilizziamo. Questo è molto più efficiente.
     // std::unique_ptr gestisce automaticamente la memoria, prevenendo memory leak.
     const int MAX_SHELLS = 20;
-    std::vector<std::unique_ptr<Shell>> shellPool(MAX_SHELLS);
+    std::vector<std::unique_ptr<Firework>> shellPool(MAX_SHELLS);
 
     float groundVertices[] = {
         // positions          // texture Coords
@@ -145,34 +145,12 @@ int main()
         // Aggiorna la timeline e ottieni gli eventi da eseguire
         auto eventsToTrigger = timeline.Update(deltaTime);
         if (!eventsToTrigger.empty())
-        { 
             for (const auto *eventData : eventsToTrigger)
-            {
-                // Cerca un proiettile inattivo e lancialo con i dati dell'evento
-                for (auto &shellPtr : shellPool)
-                {
-                    if (!shellPtr) // Se il puntatore è nullo, lo slot è libero
-                    {
-                        // Usa la factory per creare la shell corretta
-                        shellPtr = Shell::createShell(&eventData->fire, particleSystem);
-                        shellPtr->Launch(*eventData);
-                        break;  
-                    }
-                }
-            }
-        } 
+                eventData->fire->Launch(*eventData);
 
-        // Aggiorna tutti i proiettili attivi
-        for (auto &shellPtr : shellPool)
-        {
-            if (shellPtr) // Assicurati che il puntatore non sia nullo
-            {
-                shellPtr->Update(deltaTime);
-                // Se la shell ha finito, resetta il puntatore per liberare lo slot
-                if (shellPtr->GetState() == ShellState::INACTIVE)
-                    shellPtr.reset(); // Questo distrugge l'oggetto e imposta il ptr a nullptr
-            }
-        }
+        // Aggiorna tutti i fuochi
+        for (auto &f : lib)
+            f.get()->Update(deltaTime);
 
         // Aggiorna la fisica di tutte le particelle
         particleSystem.Update(deltaTime);

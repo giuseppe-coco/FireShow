@@ -2,19 +2,20 @@
 #pragma once
 
 #include <vector>
+#include <memory>
 
-#include "FireworkTypes.h"
+#include "firework/Firework.h"
 
 class Editor
 {
 private:
     int nextFireworkTypeId;
-    std::vector<Firework> fireworksLibrary;
+    std::vector<std::unique_ptr<Firework>> fireworksLibrary;
     Firework *selectedType = nullptr; // tipo di fuoco attualmente selezionato nell'editor
-    void createHardcodedFireworks();
+    void createHardcodedFireworks(ParticleSystem &ps);
 
-public: 
-    Editor();
-    std::vector<Firework>& getFireworksLibrary() { return fireworksLibrary; }
+public:
+    Editor(ParticleSystem &ps);
+    std::vector<std::unique_ptr<Firework>> &getFireworksLibrary() { return fireworksLibrary; }
     void DrawUI(int windowWidth, int windowHeight, const int editorHeight);
 };
