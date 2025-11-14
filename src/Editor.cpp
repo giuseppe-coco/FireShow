@@ -101,6 +101,27 @@ void Editor::createHardcodedFireworks()
     volcanoGold.startShellPosition = glm::vec3(0.0f, 0.5f, 0.0f); // Leggermente sopra il terreno
 
     fireworksLibrary.push_back(volcanoGold);
+
+    // --- 4. Anello Singolo ---
+    Firework singleRing;
+    singleRing.id = nextFireworkTypeId++;
+    singleRing.name = "Single Ring";
+    singleRing.family = FireworkFamily::Ring;
+    // Proprietà particelle
+    singleRing.particleCount = 55;
+    singleRing.minLifetime = 2.0f;
+    singleRing.maxLifetime = 2.0f; // Durano a lungo
+    singleRing.minSpeed = 20.0f;
+    singleRing.maxSpeed = 20.0f;                         // Velocità di espulsione alta
+    singleRing.startColor = glm::vec3(1.0f, 0.8f, 0.2f); // Oro
+    singleRing.endColor = glm::vec3(0.6f, 0.2f, 0.0f);   // Brace
+
+    // Proprietà lancio
+    singleRing.startShellPosition = glm::vec3(-30.0f, 0.0f, 0.0f);
+    singleRing.startShellVelocity = glm::vec3(0.0f, 20.0f, 0.0f);
+    singleRing.fuseTime = 2.0f;
+
+    fireworksLibrary.push_back(singleRing);
 }
 
 void Editor::DrawUI(

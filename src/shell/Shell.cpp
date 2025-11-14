@@ -3,6 +3,7 @@
 #include "PeonyShell.h"
 #include "ChrysanthemumShell.h"
 #include "VolcanoShell.h"
+#include "RingShell.h"
 
 #include <glm/gtc/random.hpp>
 #include <memory>
@@ -14,9 +15,9 @@ Shell::Shell(ParticleSystem &ps)
 
 void Shell::Launch(const FireworkEvent &event)
 {
-    this->position = event.fire->startShellPosition;
-    this->velocity = event.fire->startShellVelocity;
-    this->fuse = event.fire->fuseTime;
+    this->position = event.fire.startShellPosition;
+    this->velocity = event.fire.startShellVelocity;
+    this->fuse = event.fire.fuseTime;
     this->trailTimer = 0.0f; // resetta il timer della scia
     this->state = ShellState::RISING;
 }
@@ -70,7 +71,7 @@ void Shell::emitTrailParticle()
     particleSystem.RespawnParticle(trailParticle);
 }
 
-std::unique_ptr<Shell> Shell::createShell(const Firework* f, ParticleSystem &ps)
+std::unique_ptr<Shell> Shell::createShell(const Firework *f, ParticleSystem &ps)
 {
     switch (f->family)
     {
@@ -78,15 +79,22 @@ std::unique_ptr<Shell> Shell::createShell(const Firework* f, ParticleSystem &ps)
         return std::make_unique<PeonyShell>(ps, f);
     case FireworkFamily::Chrysanthemum:
         return std::make_unique<ChrysanthemumShell>(ps, f);
-    case FireworkFamily::Willow: { // separated scope
-        ps.shader.setInt("firework_type", static_cast<int>(FireworkFamily::Willow));
+    case FireworkFamily::Willow: 
+    { // separated scope
+        Shader willowShader("shaders/particle.vert", "shaders/particle.frag");
+        willowShader.setInt("firework_type", static_cast<int>(FireworkFamily::Willow));
+        ps.shader = willowShader;
         return std::make_unique<WillowShell>(ps, f);
     }
     case FireworkFamily::Volcano:
     {
-        ps.shader.setInt("firework_type", static_cast<int>(FireworkFamily::Volcano));
+        Shader volcanoShader("shaders/particle.vert", "shaders/particle.frag");
+        volcanoShader.setInt("firework_type", static_cast<int>(FireworkFamily::Volcano));
+        ps.shader = volcanoShader;
         return std::make_unique<VolcanoShell>(ps, f);
     }
+    case FireworkFamily::Ring:
+        return std::make_unique<RingShell>(ps, f);
     default:
         return std::make_unique<PeonyShell>(ps, f);
     }

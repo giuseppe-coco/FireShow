@@ -154,9 +154,8 @@ int main()
                     if (!shellPtr) // Se il puntatore è nullo, lo slot è libero
                     {
                         // Usa la factory per creare la shell corretta
-                        shellPtr = Shell::createShell(eventData->fire, particleSystem);
+                        shellPtr = Shell::createShell(&eventData->fire, particleSystem);
                         shellPtr->Launch(*eventData);
-                        
                         break;
                     } 
                 }

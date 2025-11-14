@@ -89,9 +89,9 @@ void Timeline::DrawUI(
         // ImGui::PushID/PopID è importante quando hai widget con la stessa etichetta in un loop.
         // Dà a ogni widget un ID unico.
         ImGui::PushID(events[i].id);
-        ImGui::Text("%s at %.2f s", events[i].fire->name.c_str(), events[i].triggerTime);
+        ImGui::Text("%s at %.2f s", events[i].fire.name.c_str(), events[i].triggerTime);
         ImGui::SameLine();
-        mayDelEvent(i);
+        mayDelEvent(i); 
         ImGui::PopID();
     }
     ImGui::End(); // Conclude la finestra
@@ -136,12 +136,12 @@ void Timeline::mayAddEvent(std::vector<Firework>& lib)
         ImGui::EndCombo();
     }
     ImGui::SameLine();
-
+ 
     if (ImGui::Button("Add Firework at Current Time"))
     {
         FireworkEvent newEvent;
         newEvent.triggerTime = currentTime;
-        newEvent.fire = selectedFirework;
+        newEvent.fire = *selectedFirework;
         newEvent.id = nextEventId++;
         events.push_back(newEvent);
     }

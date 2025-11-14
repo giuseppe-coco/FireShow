@@ -10,6 +10,15 @@ ChrysanthemumShell::ChrysanthemumShell(ParticleSystem &particleSystem, const Fir
 
 void ChrysanthemumShell::explode()
 {
+    std::cout << "[DEBUG] ChrysanthemumShell::explode() called." << std::endl;
+    if (!f)
+    {
+        std::cerr << "[FATAL ERROR] ChrysanthemumShell::explode() called, but 'f' is nullptr!" << std::endl;
+        return;
+    }
+
+    std::cout << "[DEBUG]   > Accessing firework: " << f->name
+              << " | At address: " << f << std::endl;
     if (!f)
         return;
         

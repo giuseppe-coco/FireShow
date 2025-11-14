@@ -9,7 +9,8 @@ enum class FireworkFamily
     Peony,
     Chrysanthemum,
     Willow,
-    Volcano
+    Volcano,
+    Ring
 };
 
 // Definisce le proprietà di un'esplosione di fuochi d'artificio.
@@ -39,6 +40,6 @@ struct Firework
 struct FireworkEvent
 {
     float triggerTime;  // Il momento in cui l'evento deve scattare
-    Firework *fire;     // Oggetto da lanciare
+    Firework fire;     // Oggetto da lanciare
     int id;             // Aggiungiamo un ID unico per poter gestire la selezione e la cancellazione nell'UI
 };
