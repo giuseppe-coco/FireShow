@@ -10,8 +10,16 @@ PeonyShell::PeonyShell(ParticleSystem &particleSystem, const Firework *f)
 
 void PeonyShell::explode()
 {
+    std::cout << "[DEBUG] PeonyShell::explode() called." << std::endl;
     if (!f)
+    {
+        std::cerr << "[FATAL ERROR] PeonyShell::explode() called, but 'f' is nullptr!" << std::endl;
         return;
+    }
+
+    std::cout << "[DEBUG]   > Accessing firework: " << f->name
+              << " | At address: " << f << std::endl;
+
     for (unsigned int i = 0; i < f->particleCount; ++i)
     {
         Particle p;

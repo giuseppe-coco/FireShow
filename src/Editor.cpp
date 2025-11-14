@@ -83,27 +83,24 @@ void Editor::createHardcodedFireworks()
 
     fireworksLibrary.push_back(willow);
 
-    // --- Volcano ---
-    Firework volcano;
-    volcano.id = nextFireworkTypeId++;
-    volcano.name = "Volcano";
-    volcano.family = FireworkFamily::Volcano;
+    // --- 4. VULCANO DORATO ---
+    Firework volcanoGold;
+    volcanoGold.id = nextFireworkTypeId++;
+    volcanoGold.name = "Golden Volcano Mine";
+    volcanoGold.family = FireworkFamily::Volcano; 
+    // Proprietà particelle (le "stelle" lanciate)
+    volcanoGold.particleCount = 6 ; // Meno "razzi" ma più spessi
+    volcanoGold.minLifetime = 2.0f;
+    volcanoGold.maxLifetime = 2.0f; // Durano a lungo
+    volcanoGold.minSpeed = 20.0f;
+    volcanoGold.maxSpeed = 20.0f;                         // Velocità di espulsione alta
+    volcanoGold.startColor = glm::vec3(1.0f, 0.8f, 0.2f); // Oro
+    volcanoGold.endColor = glm::vec3(0.6f, 0.2f, 0.0f);   // Brace
 
-    // Proprietà particelle
-    volcano.particleCount = 200;
-    volcano.minLifetime = 2.0f;
-    volcano.maxLifetime = 2.0f;
-    volcano.minSpeed = 10.0f;
-    volcano.maxSpeed = 12.0f;
-    volcano.startColor = glm::vec3(0.9f, 0.743f, 0.0f); // Dorato chiaro
-    volcano.endColor = glm::vec3(1.0f, 0.843f, 0.0f);   // Dorato scuro
+    // Proprietà lancio (la posizione è l'unica che conta davvero)
+    volcanoGold.startShellPosition = glm::vec3(0.0f, 0.5f, 0.0f); // Leggermente sopra il terreno
 
-    // Proprietà lancio
-    volcano.startShellPosition = glm::vec3(-30.0f, 0.0f, 0.0f);
-    volcano.startShellVelocity = glm::vec3(0.0f, 20.0f, 0.0f);
-    volcano.fuseTime = 2.0f;
-
-    fireworksLibrary.push_back(volcano);
+    fireworksLibrary.push_back(volcanoGold);
 }
 
 void Editor::DrawUI(
@@ -143,7 +140,7 @@ void Editor::DrawUI(
         if (ImGui::InputText("Name", nameBuffer, sizeof(nameBuffer)))
             selectedType->name = nameBuffer;
 
-        ImGui::DragInt("Particle Count", &selectedType->particleCount, 10, 10, 10000);
+        ImGui::DragInt("Particle Count", (int*) &selectedType->particleCount, 10, 10, 10000);
         ImGui::InputFloat("Start Shell Position", &selectedType->startShellPosition.x, 1.0f, 100.0f, "%.1f");
         ImGui::InputFloat("Start Shell velocity", &selectedType->startShellVelocity.y, 1.0f, 100.0f, "%.1f");
         ImGui::ColorEdit3("Start Color Particle", (float *)&selectedType->startColor);

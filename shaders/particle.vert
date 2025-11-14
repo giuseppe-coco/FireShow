@@ -5,7 +5,7 @@ layout (location = 1) in vec4 aColor;
 // Uniforms per le trasformazioni spaziali
 uniform mat4 projection;
 uniform mat4 view;
-uniform int isWillow;
+uniform int firework_type;
 
 // Passiamo il colore al fragment shader
 out vec4 vs_Color;
@@ -21,9 +21,9 @@ void main()
     // e la riduciamo per le particelle che stanno per "morire".
     float distance = length(gl_Position.xyz);
 
-    if (isWillow == 1)
+    if (firework_type == 2 || firework_type == 3) // Willow and Volcano firework
     {
-        gl_PointSize = distance;
+        gl_PointSize = distance / 6.0;
         //gl_PointSize *= vs_Color.a;
     }
     else

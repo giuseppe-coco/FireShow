@@ -2,6 +2,7 @@
 #include "FireworkTypes.h"
 #include "PeonyShell.h"
 #include "ChrysanthemumShell.h"
+#include "VolcanoShell.h"
 
 #include <glm/gtc/random.hpp>
 #include <memory>
@@ -13,9 +14,9 @@ Shell::Shell(ParticleSystem &ps)
 
 void Shell::Launch(const FireworkEvent &event)
 {
-    this->position = event.fire.startShellPosition;
-    this->velocity = event.fire.startShellVelocity;
-    this->fuse = event.fire.fuseTime;
+    this->position = event.fire->startShellPosition;
+    this->velocity = event.fire->startShellVelocity;
+    this->fuse = event.fire->fuseTime;
     this->trailTimer = 0.0f; // resetta il timer della scia
     this->state = ShellState::RISING;
 }
@@ -78,13 +79,15 @@ std::unique_ptr<Shell> Shell::createShell(const Firework* f, ParticleSystem &ps)
     case FireworkFamily::Chrysanthemum:
         return std::make_unique<ChrysanthemumShell>(ps, f);
     case FireworkFamily::Willow: { // separated scope
-        Shader willowShader("shaders/particle.vert", "shaders/particle.frag");
-        willowShader.setInt("isWillow", 1);
-        ps.shader = willowShader;
+        ps.shader.setInt("firework_type", static_cast<int>(FireworkFamily::Willow));
         return std::make_unique<WillowShell>(ps, f);
     }
+    case FireworkFamily::Volcano:
+    {
+        ps.shader.setInt("firework_type", static_cast<int>(FireworkFamily::Volcano));
+        return std::make_unique<VolcanoShell>(ps, f);
+    }
     default:
-        // Ritorna un tipo di default o nullptr se il tipo non è riconosciuto
         return std::make_unique<PeonyShell>(ps, f);
     }
 }

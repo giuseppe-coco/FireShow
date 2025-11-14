@@ -14,7 +14,6 @@ void WillowShell::explode()
 {
     if (!f)
         return;
-    int count = 0;
     for (unsigned int i = 0; i < f->particleCount; ++i)
     {
         glm::vec3 dir = glm::ballRand(1.0f);
@@ -22,11 +21,7 @@ void WillowShell::explode()
         // Vogliamo solo particelle che vadano verso l'alto.
         // Controlliamo semplicemente se la componente y è positiva.
         // dir.y > 0 significa un angolo di elevazione tra 0 e 90 gradi.
-        if (dir.y <= 0.1)
-        {
-            count++;
-            continue;
-        }
+        if (dir.y <= 0.1) continue;
 
         Particle p;
         p.Position = this->position;
@@ -47,5 +42,4 @@ void WillowShell::explode()
         p.subLife = 2.0; 
         particleSystem.RespawnParticle(p);        
     }
-    std::cout << "Number of dropped particles: " << count << std::endl;
 }

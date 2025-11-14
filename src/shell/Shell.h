@@ -11,7 +11,8 @@
 enum class ShellState
 {
     RISING,   // Sta salendo
-    INACTIVE  // È spento e pronto per essere riutilizzato
+    INACTIVE,  // È spento e pronto per essere riutilizzato
+    EXPLODING
 };
 
 class Shell
@@ -24,14 +25,15 @@ public:
     // risparmiando memoria e draw calls.
     Shell(ParticleSystem &particleSystem);
     
+    ShellState GetState() const { return state; }
+    static std::unique_ptr<Shell> createShell(const Firework *f, ParticleSystem &ps);
+    virtual void Launch(const FireworkEvent &event);
+    virtual void Update(float dt);
+
     // Virtual destructor. FONDAMENTALE quando si usa l'ereditarietà con polimorfismo.
     // Assicura che se si cancella un puntatore alla classe base che punta a un oggetto
     // della classe derivata, venga chiamato il distruttore corretto.
     virtual ~Shell() = default;
-    static std::unique_ptr<Shell> createShell(const Firework* f, ParticleSystem &ps);
-    void Launch(const FireworkEvent &event);
-    void Update(float dt);
-    ShellState GetState() const { return state; }
 
 protected:
     ParticleSystem &particleSystem; // Riferimento al sistema di particelle condiviso

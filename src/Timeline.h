@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vector>
-#include <map>
 #include <glm/glm.hpp>
 
 #include "FireworkTypes.h"

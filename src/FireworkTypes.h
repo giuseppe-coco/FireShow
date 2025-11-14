@@ -21,7 +21,7 @@ struct Firework
     FireworkFamily family;
     
     // --- Particles' properties ---
-    int particleCount = 100;
+    unsigned int particleCount = 100;
     float minLifetime = 0.8;
     float maxLifetime = 1.3;
     float minSpeed = 15.0;
@@ -39,6 +39,6 @@ struct Firework
 struct FireworkEvent
 {
     float triggerTime;  // Il momento in cui l'evento deve scattare
-    Firework fire;      // Oggetto da lanciare
+    Firework *fire;     // Oggetto da lanciare
     int id;             // Aggiungiamo un ID unico per poter gestire la selezione e la cancellazione nell'UI
 };

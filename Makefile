@@ -36,7 +36,7 @@ OBJS := $(patsubst %.c,$(OBJ_DIR)/%.o,$(OBJS)) # Sostituisce anche .c
 # --- Percorsi e Librerie ---
 
 # Percorsi per i file di intestazione (.h)
-INCLUDES = -Isrc -Ilibs -Ilibs/glad/include -Ilibs/glfw/include -Ivenders/imgui -Ivenders/imgui/backends
+INCLUDES = -Isrc -Isrc/shell -Ilibs -Ilibs/glad/include -Ilibs/glfw/include -Ivenders/imgui -Ivenders/imgui/backends
 
 # Percorso per le librerie (.a, .lib)
 LIBS_PATH = -Llibs/glfw/lib
@@ -68,6 +68,11 @@ $(OBJ_DIR)/%.o: src/%.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
 # Regole simili per le altre directory dei sorgenti
+$(OBJ_DIR)/%.o: src/shell/%.cpp
+	@mkdir -p $(OBJ_DIR) # Assicurati che la directory esista
+	@echo "Compiling $<..."
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
+
 $(OBJ_DIR)/%.o: libs/glad/src/%.c
 	@mkdir -p $(OBJ_DIR)
 	@echo "Compiling $<..."
