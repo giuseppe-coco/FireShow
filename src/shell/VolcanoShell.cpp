@@ -9,20 +9,20 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-VolcanoShell::VolcanoShell(ParticleSystem &particleSystem, const Firework *f, AudioManager &audioManager)
-    : Shell(particleSystem, audioManager), f(f) {}
+VolcanoShell::VolcanoShell(ParticleSystem &particleSystem, Firework fire, AudioManager &audioManager)
+    : Shell(fire, particleSystem, audioManager) {}
 
-void VolcanoShell::Launch(const FireworkEvent &event)
+void VolcanoShell::Launch()
 {
-    this->position = event.fire.startShellPosition;
+    this->position = fire.startShellPosition;
     this->state = ShellState::EXPLODING;
 }
 
 void VolcanoShell::Update(float dt)
 {
-    while (this->n_fires < this->f->particleCount && this->emitTimer + dt >= this->emitInterval)
+    while (this->n_fires < this->fire.particleCount && this->emitTimer + dt >= this->emitInterval)
     {
-        audioManager.Play(f->launchSound);
+        audioManager.Play(fire.launchSound);
         Particle star;
         star.Position = this->position;
 
@@ -34,13 +34,13 @@ void VolcanoShell::Update(float dt)
 
         // Ruota il vettore di base per ottenere la direzione finale.
         glm::vec3 dir = glm::vec3(rotation_matrix * base_direction);
-        star.Velocity = dir * this->f->minSpeed; // For this firework this->f->minSpeed == this->f->maxSpeed
+        star.Velocity = dir * this->fire.minSpeed; // For this firework this->fire.minSpeed == this->fire.maxSpeed
 
         // Le stelle del vulcano sono molto persistenti e lasciano una scia spessa
-        star.Life = this->f->minLifetime;
+        star.Life = this->fire.minLifetime;
         star.initialLife = star.Life;
-        star.startColor = this->f->startColor;
-        star.endColor = this->f->endColor;
+        star.startColor = this->fire.startColor;
+        star.endColor = this->fire.endColor;
 
         // Le stelle del vulcano sono emettitori di scie!
         star.isEmitter = true;
@@ -57,6 +57,6 @@ void VolcanoShell::Update(float dt)
 
     if (this->emitTimer + dt < this->emitInterval)
         this->emitTimer += dt;
-    if (this->n_fires == this->f->particleCount)
+    if (this->n_fires == this->fire.particleCount)
         this->state = ShellState::INACTIVE;
 }

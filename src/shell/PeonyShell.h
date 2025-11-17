@@ -5,9 +5,6 @@
 class PeonyShell : public Shell
 {
 public:
-    PeonyShell(ParticleSystem &particleSystem, const Firework *f, AudioManager &audioManager);
+    PeonyShell(ParticleSystem &particleSystem, Firework fire, AudioManager &audioManager);
     void explode() override;
-
-private:
-    const Firework *f;
 };

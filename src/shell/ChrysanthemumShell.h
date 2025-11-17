@@ -5,8 +5,6 @@
 class ChrysanthemumShell : public Shell
 {
 public:
-    ChrysanthemumShell(ParticleSystem &particleSystem, const Firework *f, AudioManager &audioManager);
+    ChrysanthemumShell(ParticleSystem &particleSystem, Firework fire, AudioManager &audioManager);
     void explode() override;
-private:
-    const Firework *f;
 };

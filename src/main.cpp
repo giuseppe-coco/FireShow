@@ -75,7 +75,7 @@ int main()
     // --- Resources Init ---
     Timeline timeline;
     Editor editor;    
-    std::vector<Firework> &lib = editor.getFireworksLibrary();
+    std::map<int,Firework> &lib = editor.getFireworksLibrary();
     AudioManager audioManager;
     if (!audioManager.Init())
     {
@@ -163,11 +163,10 @@ int main()
                 {
                     if (!shellPtr) // Se il puntatore è nullo, lo slot è libero
                     {
-                        shellPtr = Shell::createShell(&eventData->fire, particleSystem, audioManager);
-                        audioManager.Play(eventData->fire.launchSound);
-                        shellPtr->Launch(*eventData);
+                        shellPtr = Shell::createShell(particleSystem, eventData->fire, audioManager);
+                        shellPtr->Launch();
                         break;
-                    } 
+                    }
                 }
             }
         } 
@@ -177,7 +176,6 @@ int main()
         {
             if (shellPtr) // Assicurati che il puntatore non sia nullo
             {
-                std::cout << "Before updating active shell\n";
                 shellPtr->Update(deltaTime);
                 // Se la shell ha finito, resetta il puntatore per liberare lo slot
                 if (shellPtr->GetState() == ShellState::INACTIVE)

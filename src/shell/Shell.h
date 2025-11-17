@@ -24,11 +24,11 @@ public:
     // Invece di creare un ParticleSystem al suo interno, ne usa uno fornito dall'esterno.
     // Questo è ottimo perché permette a più proiettili di condividere lo stesso sistema di particelle,
     // risparmiando memoria e draw calls.
-    Shell(ParticleSystem &particleSystem, AudioManager &audioManager);
+    Shell(Firework fire, ParticleSystem &particleSystem, AudioManager &audioManager);
 
     ShellState GetState() const { return state; }
-    static std::unique_ptr<Shell> createShell(const Firework *f, ParticleSystem &ps, AudioManager &audio);
-    virtual void Launch(const FireworkEvent &event);
+    static std::unique_ptr<Shell> createShell(ParticleSystem &ps, Firework fire, AudioManager &audio);
+    virtual void Launch();
     virtual void Update(float dt);
 
     // Virtual destructor. FONDAMENTALE quando si usa l'ereditarietà con polimorfismo.
@@ -37,6 +37,7 @@ public:
     virtual ~Shell() = default;
 
 protected:
+    Firework fire;
     ParticleSystem &particleSystem; // Riferimento al sistema di particelle condiviso
     AudioManager &audioManager;
     glm::vec3 position;

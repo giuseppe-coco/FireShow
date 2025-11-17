@@ -1,5 +1,6 @@
 #pragma once
 
+#include <map>
 #include <vector>
 #include <glm/glm.hpp>
 
@@ -16,7 +17,7 @@ public:
     // La timeline non sa nulla di "Shell", sa solo di "FireworkEvent".
     std::vector<const FireworkEvent *> Update(float dt);
 
-    void DrawUI(int windowWidth, int windowHeight, const int timelineHeight, std::vector<Firework>& lib);
+    void DrawUI(int windowWidth, int windowHeight, const int timelineHeight, std::map<int, Firework>& lib);
 
     void Play();
     void Pause();
@@ -31,6 +32,6 @@ private:
     std::vector<FireworkEvent> events;
     int nextEventId; // Per generare ID unici
 
-    void mayAddEvent(std::vector<Firework>& lib);
+    void mayAddEvent(std::map<int, Firework>& lib);
     void mayDelEvent(int idx);
 };

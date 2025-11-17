@@ -8,12 +8,12 @@
 class RingShell : public Shell
 {
 public:
-    RingShell(ParticleSystem &particleSystem, const Firework *f, AudioManager &audioManager);
+    RingShell(ParticleSystem &particleSystem, Firework fire, AudioManager &audioManager);
+    void Launch() override;
     void explode() override;
     void Update(float dt) override;
 
 private:
-    const Firework *f;
     float emitTimer = 0.0, emitInterval = 0.2;
     unsigned int n_fires = 0;
 

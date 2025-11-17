@@ -5,8 +5,6 @@
 class WillowShell : public Shell
 {
 public:
-    WillowShell(ParticleSystem &particleSystem, const Firework *f, AudioManager &audioManager);
+    WillowShell(ParticleSystem &particleSystem, Firework fire, AudioManager &audioManager);
     void explode() override;
-private:
-    const Firework *f;
 };

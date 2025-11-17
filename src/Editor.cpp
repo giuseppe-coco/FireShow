@@ -6,6 +6,7 @@
 
 Editor::Editor()
 {
+    nextFireworkTypeId = -1;
     createHardcodedFireworks();
     // Imposta un default per selectedType, per evitare crash
     if (!fireworksLibrary.empty())
@@ -33,8 +34,8 @@ void Editor::createHardcodedFireworks()
     peonyRed.startShellPosition = glm::vec3(0.0f, 0.0f, 0.0f);
     peonyRed.startShellVelocity = glm::vec3(0.0f, 20.0f, 0.0f);
     peonyRed.fuseTime = 2.0f;
-    
-    fireworksLibrary.push_back(peonyRed);
+
+    fireworksLibrary[peonyRed.id] = peonyRed;
 
     // --- 2. CRISANTEMO BIANCO SCINTILLANTE ---
     // Nota: La simulazione visiva del Crisantemo richiede che le particelle
@@ -60,7 +61,7 @@ void Editor::createHardcodedFireworks()
     chrysanthemumWhite.startShellVelocity = glm::vec3(0.0f, 20.0f, 0.0f); // Sale un po' più in alto
     chrysanthemumWhite.fuseTime = 2.0f;
 
-    fireworksLibrary.push_back(chrysanthemumWhite);
+    fireworksLibrary[chrysanthemumWhite.id] = chrysanthemumWhite;
 
     Firework willow;
     willow.id = nextFireworkTypeId++;
@@ -81,7 +82,7 @@ void Editor::createHardcodedFireworks()
     willow.startShellVelocity = glm::vec3(0.0f, 20.0f, 0.0f);
     willow.fuseTime = 2.0f;
 
-    fireworksLibrary.push_back(willow);
+    fireworksLibrary[willow.id] = willow;
 
     // --- 4. VULCANO DORATO ---
     Firework volcanoGold;
@@ -100,7 +101,7 @@ void Editor::createHardcodedFireworks()
     // Proprietà lancio (la posizione è l'unica che conta davvero)
     volcanoGold.startShellPosition = glm::vec3(0.0f, 0.5f, 0.0f); // Leggermente sopra il terreno
 
-    fireworksLibrary.push_back(volcanoGold);
+    fireworksLibrary[volcanoGold.id] = volcanoGold;
 
     // --- 4. Anello Singolo ---
     Firework singleRing;
@@ -121,7 +122,7 @@ void Editor::createHardcodedFireworks()
     singleRing.startShellVelocity = glm::vec3(0.0f, 20.0f, 0.0f);
     singleRing.fuseTime = 2.0f;
 
-    fireworksLibrary.push_back(singleRing);
+    fireworksLibrary[singleRing.id] = singleRing;
 }
 
 void Editor::DrawUI(
@@ -141,15 +142,15 @@ void Editor::DrawUI(
         Firework newType;
         newType.id = nextFireworkTypeId++;
         newType.name = "New Firework " + std::to_string(newType.id);
-        fireworksLibrary.push_back(newType);
+        fireworksLibrary[nextFireworkTypeId] = newType;
     }
     ImGui::Separator();
     ImGui::Text("Library:");
     for (auto& elem : fireworksLibrary)
     {
         // Seleziona un tipo dalla lista
-        if (ImGui::Selectable(elem.name.c_str()))
-            selectedType = &elem;
+        if (ImGui::Selectable(elem.second.name.c_str()))
+            selectedType = &elem.second;
     }
     ImGui::Separator();
     // --- Editor delle proprietà del tipo selezionato ---
