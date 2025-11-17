@@ -35,6 +35,10 @@ struct Firework
     glm::vec3 startShellPosition;
     glm::vec3 startShellVelocity;
     float fuseTime;
+
+    // --- Sound ---
+    std::string launchSound = "default_launch";
+    std::string explosionSound = "default_explosion";
 };
 
 struct FireworkEvent

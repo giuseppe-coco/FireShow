@@ -18,8 +18,9 @@
 #include "Timeline.h"
 #include "FireworkTypes.h"
 #include "Editor.h"
+#include "AudioManager.h"
 
-// --- Impostazioni ---
+// --- Settings ---
 #define SETTINGS_HEIGHT 270
 
 // --- Timing ---
@@ -34,7 +35,7 @@ unsigned int loadTexture(char const *path);
 
 int main()
 {
-    // --- Inizializzazione GLFW e GLAD ---
+    // --- GLFW and GLAD Init ---
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -60,25 +61,32 @@ int main()
 
     glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 
-    // --- Setup di DEAR IMGUI ---
+    // --- DEAR IMGUI Setup ---
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO &io = ImGui::GetIO();
     (void)io; 
     // io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Abilita controllo da tastiera
-    ImGui::StyleColorsDark(); // Scegli lo stile
+    ImGui::StyleColorsDark();
     // Inizializza i backend
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330");
 
-    // --- Creazione risorse ---
+    // --- Resources Init ---
     Timeline timeline;
-    Editor editor;
+    Editor editor;    
     std::vector<Firework> &lib = editor.getFireworksLibrary();
+    AudioManager audioManager;
+    if (!audioManager.Init())
+    {
+        // Puoi decidere di uscire se l'audio non si inizializza
+        // o semplicemente continuare senza suoni.
+        std::cerr << "Continuing without audio." << std::endl;
+    }
+
     Shader groundShader("shaders/ground.vert", "shaders/ground.frag");
     Shader particleShader("shaders/particle.vert", "shaders/particle.frag");
-
-    ParticleSystem particleSystem(particleShader, 10000); // Creiamo un sistema con 10000 particelle
+    ParticleSystem particleSystem(particleShader, 10000);
 
     // --- POOL DI PROIETTILI ---
     // Creiamo un "pool" di proiettili. Invece di creare e distruggere oggetti, li riutilizziamo. Questo è molto più efficiente.
@@ -113,6 +121,7 @@ int main()
     groundShader.use();
     groundShader.setInt("groundTexture", 0);
 
+    std::cout << "Before render loop\n";
     // --- Render Loop ---
     while (!glfwWindowShouldClose(window))
     {        
@@ -144,6 +153,7 @@ int main()
 
         // Aggiorna la timeline e ottieni gli eventi da eseguire
         auto eventsToTrigger = timeline.Update(deltaTime);
+
         if (!eventsToTrigger.empty())
         { 
             for (const auto *eventData : eventsToTrigger)
@@ -153,8 +163,8 @@ int main()
                 {
                     if (!shellPtr) // Se il puntatore è nullo, lo slot è libero
                     {
-                        // Usa la factory per creare la shell corretta
-                        shellPtr = Shell::createShell(&eventData->fire, particleSystem);
+                        shellPtr = Shell::createShell(&eventData->fire, particleSystem, audioManager);
+                        audioManager.Play(eventData->fire.launchSound);
                         shellPtr->Launch(*eventData);
                         break;
                     } 
@@ -167,6 +177,7 @@ int main()
         {
             if (shellPtr) // Assicurati che il puntatore non sia nullo
             {
+                std::cout << "Before updating active shell\n";
                 shellPtr->Update(deltaTime);
                 // Se la shell ha finito, resetta il puntatore per liberare lo slot
                 if (shellPtr->GetState() == ShellState::INACTIVE)
@@ -179,7 +190,6 @@ int main()
 
         // --- Rendering ---
         glClearColor(0.10, 0.10, 0.22, 1.0);     // Un blu scuro
-        // glClearColor(0.02f, 0.02f, 0.05f, 1.0f); // Un blu scuro per il cielo notturno
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glEnable(GL_DEPTH_TEST);
 
@@ -202,7 +212,7 @@ int main()
         glBindVertexArray(groundVAO);
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
-        // --- Disegna il Particelle  ---
+        // --- Disegna le Particelle  ---
         glDepthMask(GL_FALSE);
         particleShader.use();
         particleShader.setMat4("projection", projection);

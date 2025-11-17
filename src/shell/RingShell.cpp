@@ -9,13 +9,12 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-RingShell::RingShell(ParticleSystem &particleSystem, const Firework *f)
-    : Shell(particleSystem), f(f) {}
+RingShell::RingShell(ParticleSystem &particleSystem, const Firework *f, AudioManager &audioManager)
+    : Shell(particleSystem, audioManager), f(f) {}
 
 void RingShell::Update(float dt)
 {
-    if (state == ShellState::INACTIVE)
-        return;
+    if (state == ShellState::INACTIVE) return;
 
     if (state == ShellState::RISING)
     {
@@ -33,6 +32,8 @@ void RingShell::Update(float dt)
 
 void RingShell::explode()
 {
+    if (!f) return;
+    audioManager.Play(f->explosionSound);
     float radius = 2.0;
     for (unsigned int i = 0; i < f->particleCount; ++i)
     {

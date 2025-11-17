@@ -10,8 +10,8 @@
 #include <iostream>
 #include "WillowShell.h"
 
-Shell::Shell(ParticleSystem &ps)
-    : particleSystem(ps), state(ShellState::INACTIVE) {}
+Shell::Shell(ParticleSystem &ps, AudioManager &audioManager)
+    : particleSystem(ps), audioManager(audioManager), state(ShellState::INACTIVE) {}
 
 void Shell::Launch(const FireworkEvent &event)
 {
@@ -71,31 +71,31 @@ void Shell::emitTrailParticle()
     particleSystem.RespawnParticle(trailParticle);
 }
 
-std::unique_ptr<Shell> Shell::createShell(const Firework *f, ParticleSystem &ps)
+std::unique_ptr<Shell> Shell::createShell(const Firework *f, ParticleSystem &ps, AudioManager &audio)
 {
     switch (f->family)
     {
     case FireworkFamily::Peony:
-        return std::make_unique<PeonyShell>(ps, f);
+        return std::make_unique<PeonyShell>(ps, f, audio);
     case FireworkFamily::Chrysanthemum:
-        return std::make_unique<ChrysanthemumShell>(ps, f);
+        return std::make_unique<ChrysanthemumShell>(ps, f, audio);
     case FireworkFamily::Willow: 
     { // separated scope
         Shader willowShader("shaders/particle.vert", "shaders/particle.frag");
         willowShader.setInt("firework_type", static_cast<int>(FireworkFamily::Willow));
         ps.shader = willowShader;
-        return std::make_unique<WillowShell>(ps, f);
+        return std::make_unique<WillowShell>(ps, f, audio);
     }
     case FireworkFamily::Volcano:
     {
         Shader volcanoShader("shaders/particle.vert", "shaders/particle.frag");
         volcanoShader.setInt("firework_type", static_cast<int>(FireworkFamily::Volcano));
         ps.shader = volcanoShader;
-        return std::make_unique<VolcanoShell>(ps, f);
+        return std::make_unique<VolcanoShell>(ps, f, audio);
     }
     case FireworkFamily::Ring:
-        return std::make_unique<RingShell>(ps, f);
+        return std::make_unique<RingShell>(ps, f, audio);
     default:
-        return std::make_unique<PeonyShell>(ps, f);
+        return std::make_unique<PeonyShell>(ps, f, audio);
     }
 }

@@ -9,8 +9,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-VolcanoShell::VolcanoShell(ParticleSystem &particleSystem, const Firework *f)
-    : Shell(particleSystem), f(f) {}
+VolcanoShell::VolcanoShell(ParticleSystem &particleSystem, const Firework *f, AudioManager &audioManager)
+    : Shell(particleSystem, audioManager), f(f) {}
 
 void VolcanoShell::Launch(const FireworkEvent &event)
 {
@@ -22,6 +22,7 @@ void VolcanoShell::Update(float dt)
 {
     while (this->n_fires < this->f->particleCount && this->emitTimer + dt >= this->emitInterval)
     {
+        audioManager.Play(f->launchSound);
         Particle star;
         star.Position = this->position;
 

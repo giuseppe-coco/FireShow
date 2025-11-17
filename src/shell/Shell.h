@@ -3,6 +3,7 @@
 
 #include "ParticleSystem.h"
 #include "FireworkTypes.h"
+#include "AudioManager.h"
 
 #include <memory>
 #include <glm/glm.hpp>
@@ -23,10 +24,10 @@ public:
     // Invece di creare un ParticleSystem al suo interno, ne usa uno fornito dall'esterno.
     // Questo è ottimo perché permette a più proiettili di condividere lo stesso sistema di particelle,
     // risparmiando memoria e draw calls.
-    Shell(ParticleSystem &particleSystem);
-    
+    Shell(ParticleSystem &particleSystem, AudioManager &audioManager);
+
     ShellState GetState() const { return state; }
-    static std::unique_ptr<Shell> createShell(const Firework *f, ParticleSystem &ps);
+    static std::unique_ptr<Shell> createShell(const Firework *f, ParticleSystem &ps, AudioManager &audio);
     virtual void Launch(const FireworkEvent &event);
     virtual void Update(float dt);
 
@@ -37,6 +38,7 @@ public:
 
 protected:
     ParticleSystem &particleSystem; // Riferimento al sistema di particelle condiviso
+    AudioManager &audioManager;
     glm::vec3 position;
     glm::vec3 velocity;
     float fuse;       // Timer per l'esplosione

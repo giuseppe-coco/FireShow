@@ -8,7 +8,7 @@
 class RingShell : public Shell
 {
 public:
-    RingShell(ParticleSystem &particleSystem, const Firework *f);
+    RingShell(ParticleSystem &particleSystem, const Firework *f, AudioManager &audioManager);
     void explode() override;
     void Update(float dt) override;
 

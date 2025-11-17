@@ -7,22 +7,13 @@
 #include <glm/gtc/random.hpp>
 
 // TODO: diminuire il gl_PointSize per le particelle scia dell'esplosione.
-WillowShell::WillowShell(ParticleSystem &particleSystem, const Firework *f)
-    : Shell(particleSystem), f(f) {}
+WillowShell::WillowShell(ParticleSystem &particleSystem, const Firework *f, AudioManager &audioManager)
+    : Shell(particleSystem, audioManager), f(f) {}
 
 void WillowShell::explode()
 {
-    std::cout << "[DEBUG] WillowShell::explode() called." << std::endl;
-    if (!f)
-    {
-        std::cerr << "[FATAL ERROR] WillowShell::explode() called, but 'f' is nullptr!" << std::endl;
-        return;
-    }
-
-    std::cout << "[DEBUG]   > Accessing firework: " << f->name
-              << " | At address: " << f << std::endl;
-    if (!f)
-        return;
+    if (!f) return;
+    audioManager.Play(f->explosionSound);
     for (unsigned int i = 0; i < f->particleCount; ++i)
     {
         glm::vec3 dir = glm::ballRand(1.0f);

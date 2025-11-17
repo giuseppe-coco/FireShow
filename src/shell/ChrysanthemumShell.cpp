@@ -5,23 +5,13 @@
 #include <glm/gtc/random.hpp>
 
 // Il costruttore inizializza la classe base e memorizza il tipo di fuoco.
-ChrysanthemumShell::ChrysanthemumShell(ParticleSystem &particleSystem, const Firework *f)
-    : Shell(particleSystem), f(f) {}
+ChrysanthemumShell::ChrysanthemumShell(ParticleSystem &particleSystem, const Firework *f, AudioManager &audioManager)
+    : Shell(particleSystem, audioManager), f(f) {}
 
 void ChrysanthemumShell::explode()
 {
-    std::cout << "[DEBUG] ChrysanthemumShell::explode() called." << std::endl;
-    if (!f)
-    {
-        std::cerr << "[FATAL ERROR] ChrysanthemumShell::explode() called, but 'f' is nullptr!" << std::endl;
-        return;
-    }
-
-    std::cout << "[DEBUG]   > Accessing firework: " << f->name
-              << " | At address: " << f << std::endl;
-    if (!f)
-        return;
-        
+    if (!f) return;
+    audioManager.Play(f->explosionSound);
     for (unsigned int i = 0; i < f->particleCount; ++i)
     {
         Particle p;
