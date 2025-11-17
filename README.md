@@ -1,6 +1,6 @@
 # FireShow - Pyrotechnic Display Design Software
 
-![FireShow Screenshot](assets\FireworkSimulator.png)
+![FireShow Screenshot](assets/FireworkSimulator.png)
 
 **FireShow** is a 3D fireworks display design and visualization software developed in C++ and OpenGL. Inspired by professional tools like FWsim and Finale 3D, this project allows designers to create, synchronize, and visualize complex pyrotechnic effects in a real-time 3D environment.
 
