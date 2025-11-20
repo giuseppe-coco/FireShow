@@ -18,7 +18,7 @@ void Editor::createHardcodedFireworks()
     // --- 1. PEONIA ROSSA CLASSICA ---
     Firework peonyRed;
     peonyRed.id = nextFireworkTypeId++;
-    peonyRed.name = "Classic Red Peony";
+    peonyRed.name = "Peonia";
     peonyRed.family = FireworkFamily::Peony;
 
     // Proprietà particelle
@@ -44,7 +44,7 @@ void Editor::createHardcodedFireworks()
     // che ricorda le scintille. Sarà visivamente un "fratello maggiore" della Peonia.
     Firework chrysanthemumWhite;
     chrysanthemumWhite.id = nextFireworkTypeId++;
-    chrysanthemumWhite.name = "Sparkling White Chrysanthemum";
+    chrysanthemumWhite.name = "Crisantemo";
     chrysanthemumWhite.family = FireworkFamily::Chrysanthemum; // Cambia la famiglia
 
     // Proprietà particelle
@@ -65,7 +65,7 @@ void Editor::createHardcodedFireworks()
 
     Firework willow;
     willow.id = nextFireworkTypeId++;
-    willow.name = "Willow";
+    willow.name = "Salice";
     willow.family = FireworkFamily::Willow;
 
     // Proprietà particelle
@@ -87,7 +87,7 @@ void Editor::createHardcodedFireworks()
     // --- 4. VULCANO DORATO ---
     Firework volcanoGold;
     volcanoGold.id = nextFireworkTypeId++;
-    volcanoGold.name = "Golden Volcano Mine";
+    volcanoGold.name = "Vulcano";
     volcanoGold.family = FireworkFamily::Volcano; 
     // Proprietà particelle (le "stelle" lanciate)
     volcanoGold.particleCount = 6 ; // Meno "razzi" ma più spessi
@@ -106,7 +106,7 @@ void Editor::createHardcodedFireworks()
     // --- 4. Anello Singolo ---
     Firework singleRing;
     singleRing.id = nextFireworkTypeId++;
-    singleRing.name = "Single Ring";
+    singleRing.name = "Anello";
     singleRing.family = FireworkFamily::Ring;
     // Proprietà particelle
     singleRing.particleCount = 55;
@@ -137,15 +137,15 @@ void Editor::DrawUI(
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
 
     ImGui::Begin("Firework Editor", nullptr, window_flags);
-    if (ImGui::Button("Add New Type"))
+    if (ImGui::Button("Aggiungi un nuovo tipo"))
     {
         Firework newType;
         newType.id = nextFireworkTypeId++;
-        newType.name = "New Firework " + std::to_string(newType.id);
+        newType.name = "Nuovo fuoco " + std::to_string(newType.id);
         fireworksLibrary[nextFireworkTypeId] = newType;
     }
     ImGui::Separator();
-    ImGui::Text("Library:");
+    ImGui::Text("Libreria:");
     for (auto& elem : fireworksLibrary)
     {
         // Seleziona un tipo dalla lista
@@ -156,17 +156,17 @@ void Editor::DrawUI(
     // --- Editor delle proprietà del tipo selezionato ---
     if (selectedType)
     {
-        ImGui::Text("Editing: %s", selectedType->name.c_str());
+        ImGui::Text("Modifica di : %s", selectedType->name.c_str());
         char nameBuffer[128];
         strncpy(nameBuffer, selectedType->name.c_str(), sizeof(nameBuffer));
-        if (ImGui::InputText("Name", nameBuffer, sizeof(nameBuffer)))
+        if (ImGui::InputText("Nome", nameBuffer, sizeof(nameBuffer)))
             selectedType->name = nameBuffer;
 
-        ImGui::DragInt("Particle Count", (int*) &selectedType->particleCount, 10, 10, 10000);
-        ImGui::InputFloat("Start Shell Position", &selectedType->startShellPosition.x, 1.0f, 100.0f, "%.1f");
-        ImGui::InputFloat("Start Shell velocity", &selectedType->startShellVelocity.y, 1.0f, 100.0f, "%.1f");
-        ImGui::ColorEdit3("Start Color Particle", (float *)&selectedType->startColor);
-        ImGui::ColorEdit3("End Color Particle", (float *)&selectedType->endColor);
+        ImGui::DragInt("Numero Particelle", (int*) &selectedType->particleCount, 10, 10, 10000);
+        ImGui::InputFloat("Posizione", &selectedType->startShellPosition.x, 1.0f, 100.0f, "%.1f");
+        ImGui::InputFloat("Velocita'", &selectedType->startShellVelocity.y, 1.0f, 100.0f, "%.1f");
+        ImGui::ColorEdit3("Colore Iniziale Particelle", (float *)&selectedType->startColor);
+        ImGui::ColorEdit3("Colore Finale Particelle", (float *)&selectedType->endColor);
     }
     ImGui::End();
 }

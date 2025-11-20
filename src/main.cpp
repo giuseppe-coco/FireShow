@@ -86,7 +86,7 @@ int main()
 
     Shader groundShader("shaders/ground.vert", "shaders/ground.frag");
     Shader particleShader("shaders/particle.vert", "shaders/particle.frag");
-    ParticleSystem particleSystem(particleShader, 10000);
+    ParticleSystem particleSystem(particleShader, 100000);
 
     // --- POOL DI PROIETTILI ---
     // Creiamo un "pool" di proiettili. Invece di creare e distruggere oggetti, li riutilizziamo. Questo è molto più efficiente.
@@ -121,7 +121,6 @@ int main()
     groundShader.use();
     groundShader.setInt("groundTexture", 0);
 
-    std::cout << "Before render loop\n";
     // --- Render Loop ---
     while (!glfwWindowShouldClose(window))
     {        

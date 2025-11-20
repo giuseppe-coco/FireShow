@@ -61,19 +61,19 @@ void Timeline::DrawUI(
 
     // Inizia una nuova finestra di ImGui. Tutto quello che disegneremo fino a ImGui::End()
     // apparirà in questa finestra.
-    ImGui::Begin("Timeline Controls", nullptr, window_flags);
+    ImGui::Begin("Controlli Timeline", nullptr, window_flags);
 
     // --- Controlli di riproduzione ---
     if (ImGui::Button("Play"))
         Play();
     ImGui::SameLine(); // Mette il prossimo widget sulla stessa riga
-    if (ImGui::Button("Pause"))
+    if (ImGui::Button("Pausa"))
         Pause();
     ImGui::SameLine();
     if (ImGui::Button("Reset"))
         Reset();
 
-    ImGui::Text("Current Time: %.2f s", currentTime);
+    ImGui::Text("Tempo Corrente: %.2f s", currentTime);
 
     // --- Slider della timeline ---
     // L'etichetta "##..." è un trucco di ImGui per avere un ID unico senza mostrare un'etichetta visibile.
@@ -84,9 +84,8 @@ void Timeline::DrawUI(
 
     mayAddEvent(lib);
 
-    ImGui::Text("%d events on timeline", (int)events.size());
+    ImGui::Text("%d eventi sulla timeline", (int)events.size());
 
-    // Elenca tutti gli eventi
     for (int i = 0; i < events.size(); ++i)
     {
         // ImGui::PushID/PopID è importante quando hai widget con la stessa etichetta in un loop.
@@ -97,12 +96,12 @@ void Timeline::DrawUI(
         mayDelEvent(i); 
         ImGui::PopID();
     }
-    ImGui::End(); // Conclude la finestra
+    ImGui::End();
 }
 
 void Timeline::mayDelEvent(int i)
 {
-    if (ImGui::Button("Delete"))
+    if (ImGui::Button("Elimina"))
     {
         events.erase(events.begin() + i);
         i--; // Decrementa l'indice perché il vettore si è accorciato
@@ -123,7 +122,7 @@ void Timeline::mayAddEvent(std::map<int, Firework>& lib)
     auto it = lib.find(selectedFirework->id);
 
     if (ImGui::BeginCombo(
-            "Firework Type",
+            "Tipo Fuoco",
             it != lib.end() ? it->second.name.c_str() : "",
             ImGuiComboFlags_WidthFitPreview))
     {
@@ -136,7 +135,7 @@ void Timeline::mayAddEvent(std::map<int, Firework>& lib)
     }
     ImGui::SameLine();
  
-    if (ImGui::Button("Add Firework at Current Time"))
+    if (ImGui::Button("Aggiungi Fuoco al Tempo Corrente"))
     {
         FireworkEvent newEvent;
         newEvent.triggerTime = currentTime;
