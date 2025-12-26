@@ -180,7 +180,14 @@ int Timeline::exportToCobra(std::map<int, Firework> &lib){
     file << "#Trigger Channel,#Trigger Button,#Confirmation Button,#Return Channel\n";
     file << "1,1,,1\n";
     file << "#Event Time,#Channel,#Cue,#Description\n";
-    
+
+    std::sort(
+        events.begin(),
+        events.end(), 
+        [](const FireworkEvent &e1, const FireworkEvent &e2){
+            return e1.triggerTime < e2.triggerTime;
+        }
+    );
     for (const auto &e : events){
         file << e.triggerTime << "," << e.channel << "," << e.cue << "," << lib[e.fireworkId].name << "\n";
     }
