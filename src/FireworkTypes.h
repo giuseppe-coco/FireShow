@@ -44,7 +44,8 @@ struct Firework
 struct FireworkEvent
 {
     float triggerTime;  // Il momento in cui l'evento deve scattare
+    unsigned int channel;
+    unsigned int cue;
     int fireworkId;
-    Firework fire;
     int id;             // Aggiungiamo un ID unico per poter gestire la selezione e la cancellazione nell'UI
 };

@@ -5,7 +5,7 @@
 #include <glm/gtc/random.hpp>
 
 // Il costruttore inizializza la classe base e memorizza il tipo di fuoco.
-ChrysanthemumShell::ChrysanthemumShell(ParticleSystem &particleSystem, Firework fire, AudioManager &audioManager)
+ChrysanthemumShell::ChrysanthemumShell(ParticleSystem &particleSystem, const Firework &fire, AudioManager &audioManager)
     : Shell(fire, particleSystem, audioManager) {}
 
 void ChrysanthemumShell::explode()

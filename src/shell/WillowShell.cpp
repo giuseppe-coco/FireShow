@@ -7,7 +7,7 @@
 #include <glm/gtc/random.hpp>
 
 // TODO: diminuire il gl_PointSize per le particelle scia dell'esplosione.
-WillowShell::WillowShell(ParticleSystem &particleSystem, Firework fire, AudioManager &audioManager)
+WillowShell::WillowShell(ParticleSystem &particleSystem, const Firework &fire, AudioManager &audioManager)
     : Shell(fire, particleSystem, audioManager) {}
 
 void WillowShell::explode()

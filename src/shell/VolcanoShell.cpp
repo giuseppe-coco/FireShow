@@ -9,7 +9,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-VolcanoShell::VolcanoShell(ParticleSystem &particleSystem, Firework fire, AudioManager &audioManager)
+VolcanoShell::VolcanoShell(ParticleSystem &particleSystem, const Firework &fire, AudioManager &audioManager)
     : Shell(fire, particleSystem, audioManager) {}
 
 void VolcanoShell::Launch()

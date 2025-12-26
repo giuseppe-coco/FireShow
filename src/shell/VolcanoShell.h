@@ -8,7 +8,7 @@
 class VolcanoShell : public Shell
 {
 public:
-    VolcanoShell(ParticleSystem &particleSystem, Firework fire, AudioManager &audioManager);
+    VolcanoShell(ParticleSystem &particleSystem, const Firework &fire, AudioManager &audioManager);
     void explode() override {}
     void Launch() override;
     void Update(float dt) override;

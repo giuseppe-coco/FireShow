@@ -24,10 +24,10 @@ public:
     // Invece di creare un ParticleSystem al suo interno, ne usa uno fornito dall'esterno.
     // Questo è ottimo perché permette a più proiettili di condividere lo stesso sistema di particelle,
     // risparmiando memoria e draw calls.
-    Shell(Firework fire, ParticleSystem &particleSystem, AudioManager &audioManager);
+    Shell(const Firework &fire, ParticleSystem &particleSystem, AudioManager &audioManager);
 
     ShellState GetState() const { return state; }
-    static std::unique_ptr<Shell> createShell(ParticleSystem &ps, Firework fire, AudioManager &audio);
+    static std::unique_ptr<Shell> createShell(ParticleSystem &ps, const Firework &fire, AudioManager &audio);
     virtual void Launch();
     virtual void Update(float dt);
 

@@ -155,14 +155,14 @@ int main()
 
         if (!eventsToTrigger.empty())
         { 
-            for (const auto *eventData : eventsToTrigger)
+            for (const auto *e : eventsToTrigger)
             {
                 // Cerca un proiettile inattivo e lancialo con i dati dell'evento
                 for (auto &shellPtr : shellPool)
                 {
                     if (!shellPtr) // Se il puntatore è nullo, lo slot è libero
                     {
-                        shellPtr = Shell::createShell(particleSystem, eventData->fire, audioManager);
+                        shellPtr = Shell::createShell(particleSystem, lib[e->fireworkId], audioManager);
                         shellPtr->Launch();
                         break;
                     }

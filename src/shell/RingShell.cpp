@@ -9,7 +9,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-RingShell::RingShell(ParticleSystem &particleSystem, Firework fire, AudioManager &audioManager)
+RingShell::RingShell(ParticleSystem &particleSystem, const Firework &fire, AudioManager &audioManager)
     : Shell(fire, particleSystem, audioManager) {}
 
 void RingShell::Launch()

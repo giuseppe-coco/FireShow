@@ -5,7 +5,7 @@
 #include <glm/gtc/random.hpp>
 
 // Il costruttore inizializza la classe base e memorizza il tipo di fuoco.
-PeonyShell::PeonyShell(ParticleSystem &particleSystem, Firework fire, AudioManager &audioManager)
+PeonyShell::PeonyShell(ParticleSystem &particleSystem, const Firework &fire, AudioManager &audioManager)
     : Shell(fire, particleSystem, audioManager) {}
 
 void PeonyShell::explode()

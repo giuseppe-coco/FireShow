@@ -1,12 +1,15 @@
 // Timeline.cpp
 
-#include "Timeline.h"
-#include "Utils.h" 
-#include <GLFW/glfw3.h>
 #include <iostream>
+#include <fstream>
 #include <algorithm>
-#include "../vendors/imgui/imgui.h"
 #include <map>
+
+#include "Timeline.h"
+#include "Utils.h"
+
+#include <GLFW/glfw3.h>
+#include "../vendors/imgui/imgui.h"
 
 Timeline::Timeline()
     : isPlaying(false), currentTime(0.0f), maxTime(180.0f), nextEventId(0) {}
@@ -63,15 +66,24 @@ void Timeline::DrawUI(
     // apparirà in questa finestra.
     ImGui::Begin("Controlli Timeline", nullptr, window_flags);
 
-    // --- Controlli di riproduzione ---
     if (ImGui::Button("Play"))
         Play();
-    ImGui::SameLine(); // Mette il prossimo widget sulla stessa riga
+    ImGui::SameLine();
     if (ImGui::Button("Pausa"))
         Pause();
     ImGui::SameLine();
     if (ImGui::Button("Reset"))
         Reset();
+    ImGui::SameLine();
+    if (ImGui::Button("Export to Cobra")){
+        ImGui::OpenPopup("Export result message");
+        if (exportToCobra(lib) == 0)
+            exportResMess = "Export completed successfully";
+        else
+            exportResMess = "Export failed";
+    }
+
+    drawPopUp();
 
     ImGui::Text("Tempo Corrente: %.2f s", currentTime);
 
@@ -85,15 +97,23 @@ void Timeline::DrawUI(
     mayAddEvent(lib);
 
     ImGui::Text("%d eventi sulla timeline", (int)events.size());
+    // std::cout << "E\n";
 
     for (int i = 0; i < events.size(); ++i)
     {
         // ImGui::PushID/PopID è importante quando hai widget con la stessa etichetta in un loop.
         // Dà a ogni widget un ID unico.
         ImGui::PushID(events[i].id);
-        ImGui::Text("%s at %.2f s", lib[events[i].fireworkId].name.c_str(), events[i].triggerTime);
+
+        std::string fireName = "Unknown";
+        if (lib.find(events[i].fireworkId) != lib.end())
+        {
+            fireName = lib[events[i].fireworkId].name;
+        }
+
+        ImGui::Text("%s at %.2f s", fireName.c_str(), events[i].triggerTime);
         ImGui::SameLine();
-        mayDelEvent(i); 
+        mayDelEvent(i);
         ImGui::PopID();
     }
     ImGui::End();
@@ -102,46 +122,78 @@ void Timeline::DrawUI(
 void Timeline::mayDelEvent(int i)
 {
     if (ImGui::Button("Elimina"))
-    {
         events.erase(events.begin() + i);
-        i--; // Decrementa l'indice perché il vettore si è accorciato
-    }
 }
 
-void Timeline::mayAddEvent(std::map<int, Firework>& lib)
+void Timeline::mayAddEvent(std::map<int, Firework> &lib)
 {
-    // Dropdown per selezionare il tipo di fuoco da aggiungere
-    static Firework* selectedFirework; // static per mantenere la selezione tra i frame
-    
-    // Se selectedFirework non è ancora stato impostato (è la prima volta o
-    // l'elemento che puntava è stato cancellato), lo impostiamo al primo
-    // elemento della libreria come default sicuro.
-    if (selectedFirework == nullptr)
-        selectedFirework = &lib[0];
+    static int selectedFireworkId = -1;
+    if (lib.empty()) return;
 
-    auto it = lib.find(selectedFirework->id);
+    // Inizializzazione sicura: se non abbiamo un ID valido, prendiamo il primo della mappa
+    if (lib.find(selectedFireworkId) == lib.end())
+        selectedFireworkId = lib.begin()->first;
 
-    if (ImGui::BeginCombo(
-            "Tipo Fuoco",
-            it != lib.end() ? it->second.name.c_str() : "",
-            ImGuiComboFlags_WidthFitPreview))
+    // Dropdown
+    if (ImGui::BeginCombo("Tipo Fuoco", lib[selectedFireworkId].name.c_str(), ImGuiComboFlags_WidthFitPreview))
     {
-        for (auto& elem : lib)
+        for (auto &elem : lib)
         {
-            if (ImGui::Selectable(elem.second.name.c_str(), selectedFirework->id == elem.second.id))
-                selectedFirework = &elem.second;
+            bool isSelected = (selectedFireworkId == elem.first);
+            if (ImGui::Selectable(elem.second.name.c_str(), isSelected))
+                selectedFireworkId = elem.first;
+
+            // Imposta il focus iniziale sull'elemento selezionato
+            if (isSelected)
+                ImGui::SetItemDefaultFocus();
         }
         ImGui::EndCombo();
     }
+
     ImGui::SameLine();
- 
+
     if (ImGui::Button("Aggiungi Fuoco al Tempo Corrente"))
     {
         FireworkEvent newEvent;
         newEvent.triggerTime = currentTime;
-        newEvent.fireworkId = selectedFirework->id;
-        newEvent.fire = *selectedFirework;
+
+        newEvent.fireworkId = selectedFireworkId;
+
         newEvent.id = nextEventId++;
+        newEvent.channel = 1;
+        newEvent.cue = newEvent.id;
+
         events.push_back(newEvent);
+
+        std::cout << "Evento aggiunto: ID evento" << newEvent.id << " (" << lib[newEvent.fireworkId].name << ")" << std::endl;
+    }
+}
+
+int Timeline::exportToCobra(std::map<int, Firework> &lib){
+    std::ofstream file("show.csv");
+    if (!file)
+    {
+        std::cerr << "Errore apertura file\n";
+        return 1;
+    }
+
+    file << "#Trigger Channel,#Trigger Button,#Confirmation Button,#Return Channel\n";
+    file << "1,1,,1\n";
+    file << "#Event Time,#Channel,#Cue,#Description\n";
+    
+    for (const auto &e : events){
+        file << e.triggerTime << "," << e.channel << "," << e.cue << "," << lib[e.fireworkId].name << "\n";
+    }
+
+    file.close();
+    return 0;
+}
+
+void Timeline::drawPopUp(){
+    if (ImGui::BeginPopup("Export result message"))
+    {
+        ImGui::Text(exportResMess.c_str());
+        ImGui::EndPopup();
+        ImGui::CloseCurrentPopup();
     }
 }

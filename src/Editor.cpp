@@ -6,7 +6,7 @@
 
 Editor::Editor()
 {
-    nextFireworkTypeId = -1;
+    nextFireworkTypeId = 0;
     createHardcodedFireworks();
     // Imposta un default per selectedType, per evitare crash
     if (!fireworksLibrary.empty())

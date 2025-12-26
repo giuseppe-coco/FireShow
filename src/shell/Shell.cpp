@@ -10,7 +10,7 @@
 #include <iostream>
 #include "WillowShell.h"
 
-Shell::Shell(Firework fire, ParticleSystem &ps, AudioManager &audioManager)
+Shell::Shell(const Firework &fire, ParticleSystem &ps, AudioManager &audioManager)
     : fire(fire), particleSystem(ps), audioManager(audioManager), state(ShellState::INACTIVE) {}
 
 void Shell::Launch()
@@ -72,8 +72,8 @@ void Shell::emitTrailParticle()
     particleSystem.RespawnParticle(trailParticle);
 }
 
-std::unique_ptr<Shell> Shell::createShell(ParticleSystem &ps, Firework fire, AudioManager &audio)
-{
+std::unique_ptr<Shell> Shell::createShell(ParticleSystem &ps, const Firework &fire, AudioManager &audio)
+{ 
     switch (fire.family)
     {
     case FireworkFamily::Peony:

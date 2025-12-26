@@ -28,10 +28,14 @@ private:
     float currentTime;
     float maxTime; // Durata totale della timeline (es. 180 secondi)
 
-    // L'elenco di tutti gli eventi programmati
     std::vector<FireworkEvent> events;
-    int nextEventId; // Per generare ID unici
+    int nextEventId;
+
+    std::string exportResMess;
 
     void mayAddEvent(std::map<int, Firework>& lib);
     void mayDelEvent(int idx);
+
+    int exportToCobra(std::map<int, Firework> &lib);
+    void drawPopUp();
 };
